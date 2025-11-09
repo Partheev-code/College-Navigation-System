@@ -1,0 +1,410 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f4f7fa;
+    color: #333;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    transition: transform 0.3s ease;
+    z-index: 1000;
+}
+
+.sidebar.collapsed {
+    transform: translateX(-100%);
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.toggle-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: 600;
+    color: #007bff;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: #007bff;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.user-details .user-name {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.user-details .user-role {
+    font-size: 14px;
+    color: #666;
+}
+
+.nav-menu {
+    list-style: none;
+}
+
+.section-title {
+    font-size: 14px;
+    color: #666;
+    margin: 20px 0 10px;
+    font-weight: 500;
+}
+
+.nav-item .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+.nav-item .nav-link:hover,
+.nav-item .nav-link.active {
+    background: #007bff;
+    color: #fff;
+}
+
+.nav-item .nav-link i {
+    font-size: 16px;
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    width: calc(100% - 250px);
+    transition: all 0.3s ease;
+}
+
+.main-content.expanded {
+    margin-left: 0;
+    width: 100%;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.mobile-toggle-btn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+}
+
+.header-actions {
+    margin-left: auto;
+}
+
+.profile-btn {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 16px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+
+.profile-btn:hover {
+    background: #0056b3;
+}
+
+/* Notifications Section */
+.notifications-section {
+    margin: 20px 0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.section-heading {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.action-btn {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.action-btn:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+
+.notifications-list-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.notification-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    transition: transform 0.2s ease;
+}
+
+.notification-item:hover {
+    transform: translateY(-2px);
+}
+
+.notification-date {
+    text-align: center;
+}
+
+.notification-day {
+    font-size: 24px;
+    font-weight: 600;
+    color: #007bff;
+}
+
+.notification-month {
+    font-size: 14px;
+    color: #666;
+}
+
+.notification-info {
+    flex: 1;
+}
+
+.notification-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.notification-time {
+    font-size: 14px;
+    color: #666;
+    margin: 5px 0;
+}
+
+.notification-time i {
+    margin-right: 5px;
+}
+
+.notification-message {
+    font-size: 14px;
+    color: #333;
+}
+
+.notifications-loading {
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    padding: 10px;
+}
+
+.notifications-loading i {
+    margin-right: 5px;
+}
+
+.notifications-error {
+    text-align: center;
+    font-size: 14px;
+    color: #d9534f;
+    padding: 10px;
+}
+
+/* College Messages Section */
+.college-messages-section {
+    margin: 20px 0;
+}
+
+.messages-list-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.message-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    transition: transform 0.2s ease;
+}
+
+.message-item:hover {
+    transform: translateY(-2px);
+}
+
+.message-date {
+    text-align: center;
+}
+
+.message-day {
+    font-size: 24px;
+    font-weight: 600;
+    color: #007bff;
+}
+
+.message-month {
+    font-size: 14px;
+    color: #666;
+}
+
+.message-info {
+    flex: 1;
+}
+
+.message-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.message-time {
+    font-size: 14px;
+    color: #666;
+    margin: 5px 0;
+}
+
+.message-time i {
+    margin-right: 5px;
+}
+
+.message-content {
+    font-size: 14px;
+    color: #333;
+}
+
+.messages-loading {
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    padding: 10px;
+}
+
+.messages-loading i {
+    margin-right: 5px;
+}
+
+.messages-error {
+    text-align: center;
+    font-size: 14px;
+    color: #d9534f;
+    padding: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.mobile-show {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .mobile-toggle-btn {
+        display: block;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}

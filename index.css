@@ -1,0 +1,383 @@
+
+        /* Your existing CSS unchanged */
+         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+            --primary-color: #007bff;
+            --hover-color: #0056b3;
+            --text-color: #333;
+            --error-color: red;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: var(--primary-gradient);
+        }
+
+        .login-container, .role-selection button, input, .modal {
+            transition: all 0.3s ease;
+        }
+
+        .login-container {
+            display: flex;
+            background: var(--primary-gradient);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            width: 100%;
+            max-width: 875px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .features-section {
+            flex: 1;
+            background: var(--primary-color);
+            padding: 2rem;
+            color: #fff;
+        }
+
+        .features-section h3 {
+            font-size: clamp(1.5rem, 3vw, 1.8rem);
+            margin-bottom: 1rem;
+        }
+
+        .features-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features-section li {
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .features-section li::before {
+            content: '✔';
+            margin-right: 0.5rem;
+        }
+
+        .login-section {
+            flex: 1;
+            padding: 2rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+
+        .login-section h2 {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .login-section p {
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .role-selection {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .role-selection button {
+            flex: 1;
+            margin: 0.3rem;
+            padding: 0.6rem;
+            border: 2px solid var(--primary-color);
+            background: var(--primary-gradient);
+            border-radius: 20px;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        .role-selection button:hover {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .role-selection button.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .login-section .input-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .login-section input {
+            width: 100%;
+            padding: 0.6rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+        }
+
+        .login-section .password-container {
+            position: relative;
+        }
+
+        .login-section .password-container input {
+            padding-right: 2rem;
+        }
+
+        .login-section .password-container .toggle-password {
+            position: absolute;
+            right: 0.6rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .login-section .error-message {
+            color: var(--error-color);
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+            margin-top: 0.3rem;
+            display: none;
+            text-align: left;
+        }
+
+        .login-section .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        .login-section .suggestions div {
+            padding: 0.6rem;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .login-section .suggestions div:hover {
+            background: #f0f0f0;
+        }
+
+        .login-section .forgot-password {
+            display: block;
+            text-align: right;
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+            color: var(--primary-color);
+            text-decoration: none;
+            margin: 0.5rem 0;
+        }
+
+        .login-section .login-btn {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            cursor: pointer;
+        }
+
+        .login-section .login-btn:hover {
+            background: var(--hover-color);
+        }
+
+        .skip-section {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .skip-section .or-text {
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .skip-section .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .skip-section .skip-btn, .skip-section .register-btn {
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            background: var(--primary-gradient);
+            border: 2px solid var(--primary-color);
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s, box-shadow 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .skip-section .skip-btn:hover, .skip-section .register-btn:hover {
+            background: var(--primary-color);
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-content h2 {
+            font-size: clamp(1.5rem, 4vw, 1.8rem);
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 0.6rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+        }
+
+        .modal-content .password-container {
+            position: relative;
+        }
+
+        .modal-content .password-container input {
+            padding-right: 2rem;
+        }
+
+        .modal-content .password-container .toggle-password {
+            position: absolute;
+            right: 0.6rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .modal-content .error-message {
+            color: var(--error-color);
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+            margin-top: 0.3rem;
+            display: none;
+            text-align: left;
+        }
+
+        .modal-content .register-submit-btn {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            cursor: pointer;
+        }
+
+        .modal-content .register-submit-btn:hover {
+            background: var(--hover-color);
+        }
+
+        .modal-content .close-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 600px) {
+            .login-container {
+                flex-direction: column;
+                max-width: 90%;
+                margin: 1rem;
+            }
+            .features-section, .login-section {
+                padding: 1.5rem;
+            }
+            .role-selection {
+                flex-direction: column;
+            }
+            .role-selection button {
+                margin: 0.2rem 0;
+            }
+            .login-section input, .login-section .login-btn {
+                padding: 0.5rem;
+            }
+            .skip-section .action-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .modal-content {
+                padding: 1.5rem;
+            }
+            .skip-section .skip-btn, .skip-section .register-btn {
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .features-section h3 {
+                font-size: 1.2rem;
+            }
+            .features-section li {
+                font-size: 0.8rem;
+            }
+            .login-section h2 {
+                font-size: 1.3rem;
+            }
+            .login-section p, .skip-section .or-text, .skip-section .skip-btn, .skip-section .register-btn {
+                font-size: 0.8rem;
+            }
+            .modal-content h2 {
+                font-size: 1.3rem;
+            }
+        }
+

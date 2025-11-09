@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Map - College Navigation System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="campus_map.css" rel="stylesheet">
+    <style>
+        /* Styling for street view instructions */
+        #street-view-instructions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            z-index: 1000;
+        }
+        #street-view-instructions p {
+            margin: 0 0 10px 0;
+        }
+        #street-view-instructions button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        #street-view-instructions button:hover {
+            background-color: #0056b3;
+        }
+        /* Styling for pop-up modal */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            display: none;
+        }
+        .popup.visible {
+            display: block;
+        }
+        .popup .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        .popup h3, .popup p, .popup h4, .popup ul {
+            margin: 0 0 10px 0;
+        }
+        .popup .action-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1em;
+        }
+        .popup .action-btn:hover {
+            background-color: #0056b3;
+        }
+        .popup .no-events-message {
+            display: none;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="map-section">
+        <div class="map-container" id="map-container">
+            <canvas id="campusMapCanvas"></canvas>
+            <div class="map-controls">
+                <button class="map-control-btn zoom-in-btn" aria-label="Zoom in">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="map-control-btn zoom-out-btn" aria-label="Zoom out">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button class="map-control-btn location-btn" aria-label="Show navigation search">
+                    <i class="fas fa-location-arrow"></i>
+                </button>
+                <button class="map-control-btn street-view-btn" aria-label="Street view">
+                    <i class="fas fa-street-view"></i>
+                </button>
+                <button class="map-control-btn back-to-login-btn" id="back-to-login-btn" aria-label="Back to login page">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+            </div>
+            <div class="search-bars" id="search-bars">
+                <input type="text" id="current-building" placeholder="Current Building" list="building-list">
+                <input type="text" id="destination-building" placeholder="Destination Building" list="building-list">
+                <datalist id="building-list"></datalist>
+                <button id="show-path-btn">Show Path</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="street-view-instructions">
+        <p>Click anywhere to enter Street View!</p>
+        <p>Use WASD to move, mouse to look around.</p>
+        <p>Press ESC to exit Street View.</p>
+        <button id="enter-street-view-btn">Enter Street View</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('campusMapCanvas');
+            const mapContainer = document.getElementById('map-container');
+            let scene, camera, renderer, orbitControls, pointerLockControls, campusModel, currentPathLine;
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            const zoomInBtn = document.querySelector('.zoom-in-btn');
+            const zoomOutBtn = document.querySelector('.zoom-out-btn');
+            const locationBtn = document.querySelector('.location-btn');
+            const streetViewBtn = document.querySelector('.street-view-btn');
+            const searchBars = document.getElementById('search-bars');
+            const backToLoginBtn = document.getElementById('back-to-login-btn');
+            const currentBuildingInput = document.getElementById('current-building');
+            const destinationBuildingInput = document.getElementById('destination-building');
+            const showPathBtn = document.getElementById('show-path-btn');
+            const buildingList = document.getElementById('building-list');
+            const streetViewInstructions = document.getElementById('street-view-instructions');
+            const enterStreetViewBtn = document.getElementById('enter-street-view-btn');
+
+            let waypoints = [];
+            let paths = [];
+            let isStreetViewMode = false;
+            const velocity = new THREE.Vector3();
+            let prevTime = performance.now();
+            let moveForward = false;
+            let moveBackward = false;
+            let moveLeft = false;
+            let moveRight = false;
+
+            const buildingData = {
+                'english': {
+                    name: 'English building',
+                    description: 'communicative english ',
+                    details: 'department that fluorishes the english culture.',
+                   
+                },
+                'office': {
+                    name: 'Administration Office',
+                    description: 'The central hub for all administrative services, including student registration, financial aid, and general inquiries.',
+                    details: 'Key departments: Admissions, Finance, Student Affairs, HR. Open: 9:00 AM - 5:00 PM (Weekdays).',
+                   
+                },
+                'security': {
+                    name: 'Campus Security Office',
+                    description: 'Ensuring the safety and well-being of all students, faculty, and staff 24/7.',
+                    details: 'Provides emergency response, lost and found services, and general campus safety information.',
+                    
+                },
+                'greathall': {
+                    name: 'Great Hall Auditorium',
+                    description: 'A multi-purpose venue used for large lectures, conferences, concerts, and graduation ceremonies.',
+                    details: 'Capacity: 1500 seats. Equipped with state-of-the-art audiovisual systems.',
+                    
+                },
+                'aquarium': {
+                    name: 'Campus Aquarium',
+                    description: 'A relaxing space featuring a large aquarium with diverse marine life.',
+                    details: 'Open to students and visitors from 10:00 AM to 6:00 PM.',
+                    
+                },
+                'Bvoc': {
+                    name: 'Bvoc building',
+                    description: 'B Voc (Bachelor of Vocational Education)',
+                    details: 'it is a ug program that includes two department . Bvoc IT and Bvoc TT',
+                    
+                    
+                },
+                'a': {
+                    name: 'a',
+                    description: 'A relaxing space featuring a large aquarium with diverse marine life.',
+                    details: 'Open to students and visitors from 10:00 AM to 6:00 PM.',
+                    
+                },
+                'b': {
+                    name: 'b',
+                    description: 'A relaxing space featuring a large aquarium with diverse marine life.',
+                    details: 'Open to students and visitors from 10:00 AM to 6:00 PM.',
+                    
+                },
+                'c': {
+                    name: 'c',
+                    description: 'A relaxing space featuring a large aquarium with diverse marine life.',
+                    details: 'Open to students and visitors from 10:00 AM to 6:00 PM.',
+                    
+                },
+                'd': {
+                    name: 'd',
+                    description: 'A relaxing space featuring a large aquarium with diverse marine life.',
+                    details: 'Open to students and visitors from 10:00 AM to 6:00 PM.',
+                    
+                },
+                'e': {
+                    name: 'e',
+                    description: 'A relaxing space featuring a large aquarium with diverse marine life.',
+                    details: 'Open to students and visitors from 10:00 AM to 6:00 PM.',
+                   
+                }
+            };
+
+            function init3DMap() {
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x87CEEB);
+                camera = new THREE.PerspectiveCamera(90, mapContainer.clientWidth / mapContainer.clientHeight, 0.1, 1000);
+                camera.position.set(0, 50, 100); // Adjusted initial position
+                renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+                renderer.setClearColor(0x87CEEB, 1);
+                renderer.setSize(mapContainer.clientWidth, mapContainer.clientHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 1;
+                renderer.shadowMap.enabled = true;
+
+                orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+                orbitControls.enableDamping = true;
+                orbitControls.dampingFactor = 0.25;
+                orbitControls.enablePan = true;
+                orbitControls.enableRotate = true;
+                orbitControls.enableZoom = true;
+                orbitControls.maxPolarAngle = Math.PI;
+                orbitControls.minPolarAngle = 0;
+                orbitControls.minDistance = 5;
+                orbitControls.maxDistance = 200;
+                orbitControls.panSpeed = 1.0;
+                orbitControls.rotateSpeed = 1.0;
+                orbitControls.zoomSpeed = 1.2;
+                orbitControls.target.set(0, 0, 0);
+
+                pointerLockControls = new THREE.PointerLockControls(camera, document.body);
+                scene.add(pointerLockControls.getObject());
+
+                pointerLockControls.addEventListener('lock', function () {
+                    streetViewInstructions.style.display = 'none';
+                    orbitControls.enabled = false;
+                    isStreetViewMode = true;
+                    velocity.set(0, 0, 0);
+                    camera.position.y = 1.8; // Adjusted for no scaling
+                    moveForward = false;
+                    moveBackward = false;
+                    moveLeft = false;
+                    moveRight = false;
+                    console.log("PointerLockControls locked, entering Street View.");
+                });
+
+                pointerLockControls.addEventListener('unlock', function () {
+                    streetViewInstructions.style.display = 'block';
+                    orbitControls.enabled = true;
+                    isStreetViewMode = false;
+                    camera.position.set(orbitControls.target.x, orbitControls.target.y + 50, orbitControls.target.z + 100);
+                    orbitControls.update();
+                    console.log("PointerLockControls unlocked, exiting Street View.");
+                });
+
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                scene.add(ambientLight);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+                directionalLight.position.set(10, 20, 10);
+                directionalLight.castShadow = true;
+                directionalLight.shadow.mapSize.width = 2048;
+                directionalLight.shadow.mapSize.height = 2048;
+                directionalLight.shadow.camera.near = 0.5;
+                directionalLight.shadow.camera.far = 50;
+                directionalLight.shadow.camera.left = -25;
+                directionalLight.shadow.camera.right = 25;
+                directionalLight.shadow.camera.top = 25;
+                directionalLight.shadow.camera.bottom = -25;
+                scene.add(directionalLight);
+                const hemisphereLight = new THREE.HemisphereLight(0xb1e1ff, 0xb97a20, 0.5);
+                scene.add(hemisphereLight);
+
+                const loader = new THREE.GLTFLoader();
+                loader.load(
+                    'models/campus_map.glb',
+                    function (gltf) {
+                        campusModel = gltf.scene;
+                        // No scaling or offset applied
+                        campusModel.position.set(0, 0, 0);
+                        campusModel.traverse((node) => {
+                            if (node.isMesh) {
+                                node.castShadow = true;
+                                node.receiveShadow = true;
+                                if (node.name) {
+                                    console.log("Mesh Name found in GLB:", node.name);
+                                }
+                            }
+                        });
+                        scene.add(campusModel);
+                        orbitControls.target.set(0, 0, 0);
+                        camera.position.set(0, 50, 100);
+                        camera.lookAt(orbitControls.target);
+                        orbitControls.update();
+                        loadWaypointsAndPaths();
+                        animate();
+                    },
+                    function (xhr) {
+                        console.log((xhr.loaded / xhr.total * 100).toFixed(2) + '% loaded');
+                    },
+                    function (error) {
+                        console.error('An error happened loading the GLTF model:', error);
+                        const geometry = new THREE.BoxGeometry(5, 5, 5);
+                        const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+                        campusModel = new THREE.Mesh(geometry, material);
+                        scene.add(campusModel);
+                        animate();
+                    }
+                );
+
+                window.addEventListener('resize', onWindowResize, false);
+                canvas.addEventListener('click', onCanvasClick, false);
+
+                zoomInBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!isStreetViewMode && camera && orbitControls) {
+                        const distance = camera.position.distanceTo(orbitControls.target);
+                        if (distance > orbitControls.minDistance) {
+                            camera.position.lerp(orbitControls.target, 0.1);
+                            orbitControls.update();
+                        }
+                    }
+                });
+
+                zoomOutBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!isStreetViewMode && camera && orbitControls) {
+                        const distance = camera.position.distanceTo(orbitControls.target);
+                        if (distance < orbitControls.maxDistance) {
+                            const direction = camera.position.clone().sub(orbitControls.target).normalize();
+                            camera.position.addScaledVector(direction, 5);
+                            orbitControls.update();
+                        }
+                    }
+                });
+
+                locationBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!isStreetViewMode) {
+                        searchBars.style.display = searchBars.style.display === 'block' ? 'none' : 'block';
+                        if (searchBars.style.display === 'block') {
+                            currentBuildingInput.focus();
+                        }
+                    }
+                });
+
+                streetViewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleStreetViewMode();
+                });
+
+                enterStreetViewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    pointerLockControls.lock();
+                });
+
+                backToLoginBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html';
+                });
+
+                backToLoginBtn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        window.location.href = 'index.html';
+                    }
+                });
+
+                showPathBtn.addEventListener('click', () => {
+                    const startName = currentBuildingInput.value.trim();
+                    const endName = destinationBuildingInput.value.trim();
+                    if (startName && endName) {
+                        findAndDrawPath(startName, endName);
+                    } else {
+                        alert('Please enter both current and destination buildings.');
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!isStreetViewMode && !searchBars.contains(e.target) && !locationBtn.contains(e.target) && !e.target.closest('.popup') && !canvas.contains(e.target)) {
+                        searchBars.style.display = 'none';
+                        hideBuildingInfo();
+                    }
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    switch (event.code) {
+                        case 'KeyW':
+                            moveForward = true;
+                            break;
+                        case 'KeyA':
+                            moveLeft = true;
+                            break;
+                        case 'KeyS':
+                            moveBackward = true;
+                            break;
+                        case 'KeyD':
+                            moveRight = true;
+                            break;
+                    }
+                });
+
+                document.addEventListener('keyup', (event) => {
+                    switch (event.code) {
+                        case 'KeyW':
+                            moveForward = false;
+                            break;
+                        case 'KeyA':
+                            moveLeft = false;
+                            break;
+                        case 'KeyS':
+                            moveBackward = false;
+                            break;
+                        case 'KeyD':
+                            moveRight = false;
+                            break;
+                    }
+                });
+            }
+
+            function toggleStreetViewMode() {
+                if (isStreetViewMode) {
+                    pointerLockControls.unlock();
+                } else {
+                    camera.position.set(orbitControls.target.x, 0.1, orbitControls.target.z); // Adjusted for no scaling
+                    camera.lookAt(orbitControls.target);
+                    pointerLockControls.lock();
+                    streetViewInstructions.style.display = 'block';
+                }
+            }
+
+            function loadWaypointsAndPaths() {
+                fetch('data/waypoints.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        waypoints = data.waypoints;
+                        paths = data.paths;
+                        waypoints.forEach(wp => {
+                            const option = document.createElement('option');
+                            option.value = wp.name;
+                            buildingList.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error loading waypoints:', error));
+            }
+
+            function onWindowResize() {
+                if (camera && renderer && mapContainer) {
+                    camera.aspect = mapContainer.clientWidth / mapContainer.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(mapContainer.clientWidth, mapContainer.clientHeight);
+                    renderer.render(scene, camera);
+                }
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                const time = performance.now();
+                const delta = (time - prevTime) / 1000;
+                if (isStreetViewMode) {
+                    velocity.x -= velocity.x * 10.0 * delta;
+                    velocity.z -= velocity.z * 10.0 * delta;
+                    if (moveForward) velocity.z -= 400.0 * delta;
+                    if (moveBackward) velocity.z += 400.0 * delta;
+                    if (moveLeft) velocity.x -= 400.0 * delta;
+                    if (moveRight) velocity.x += 400.0 * delta;
+                    pointerLockControls.getObject().translateX(velocity.x * delta);
+                    pointerLockControls.getObject().translateZ(velocity.z * delta);
+                    if (camera.position.y < 0.1) { // Adjusted for no scaling
+                        camera.position.y = 0.1;
+                    }
+                } else if (orbitControls) {
+                    orbitControls.update();
+                }
+                renderer.render(scene, camera);
+                prevTime = time;
+            }
+
+            function onCanvasClick(event) {
+                if (isStreetViewMode) {
+                    console.log("Click ignored: In street view mode.");
+                    return;
+                }
+                if (!campusModel) {
+                    console.warn("Click ignored: Campus model not yet loaded.");
+                    return;
+                }
+                if (event.button !== 0) {
+                    console.log("Click ignored: Not a left-click.");
+                    return;
+                }
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                console.log("Mouse coords:", { x: mouse.x, y: mouse.y });
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(campusModel.children, true);
+                console.log("Raycaster intersections:", intersects.length);
+                if (intersects.length > 0) {
+                    const clickedObject = intersects[0].object;
+                    console.log("Clicked object:", clickedObject.name || "Unnamed", "Type:", clickedObject.type);
+                    let buildingNameKey = null;
+                    let currentParent = clickedObject;
+                    let hierarchy = [];
+                    let buildingPosition = new THREE.Vector3();
+                    while (currentParent && currentParent !== scene) {
+                        hierarchy.push(currentParent.name || "Unnamed");
+                        if (currentParent.name && buildingData[currentParent.name]) {
+                            buildingNameKey = currentParent.name;
+                            currentParent.getWorldPosition(buildingPosition);
+                            break;
+                        }
+                        currentParent = currentParent.parent;
+                    }
+                    console.log("Object hierarchy:", hierarchy);
+                    if (buildingNameKey) {
+                        console.log("Found building:", buildingNameKey);
+                        console.log(`Building position: (${buildingPosition.x.toFixed(2)}, ${buildingPosition.y.toFixed(2)}, ${buildingPosition.z.toFixed(2)})`);
+                        const info = buildingData[buildingNameKey];
+                        displayBuildingInfo(info, buildingPosition);
+                    } else {
+                        console.log("No matching building found in buildingData for clicked object.");
+                        hideBuildingInfo();
+                    }
+                } else {
+                    console.log("No objects intersected by raycaster.");
+                    hideBuildingInfo();
+                }
+            }
+
+            function displayBuildingInfo(info, position) {
+                console.log("Displaying building info for:", info.name);
+                // Remove any existing pop-up
+                hideBuildingInfo();
+                // Create overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'popup-overlay';
+                overlay.style.display = 'block';
+                // Create pop-up
+                const popup = document.createElement('div');
+                popup.className = 'popup visible';
+                popup.innerHTML = `
+                    
+                    <h3>${info.name}</h3>
+                    <p><strong>Location:</strong> (${position.x.toFixed(2)}, ${position.y.toFixed(2)}, ${position.z.toFixed(2)})</p>
+                    <p>${info.description}</p>
+                    <p>${info.details}</p>
+                  
+                    
+                `;
+                document.body.appendChild(overlay);
+                document.body.appendChild(popup);
+                // Populate events
+                const eventsList = popup.querySelector('.events-list');
+                const noEventsMessage = popup.querySelector('.no-events-message');
+                if (info.events && info.events.length > 0) {
+                    info.events.forEach(event => {
+                        const li = document.createElement('li');
+                        li.textContent = `${event.title} - ${event.time} (${event.location})`;
+                        eventsList.appendChild(li);
+                    });
+                    noEventsMessage.style.display = 'none';
+                    eventsList.style.display = 'block';
+                    console.log("Events added:", info.events.length);
+                } else {
+                    eventsList.innerHTML = '';
+                    noEventsMessage.style.display = 'block';
+                    eventsList.style.display = 'none';
+                    console.log("No events for this building.");
+                }
+                // Add close button event
+                const closeBtn = popup.querySelector('.close-btn');
+                closeBtn.addEventListener('click', hideBuildingInfo);
+                // Add Escape key listener
+                document.addEventListener('keydown', function closeOnEsc(e) {
+                    if (e.key === 'Escape') {
+                        hideBuildingInfo();
+                        document.removeEventListener('keydown', closeOnEsc);
+                    }
+                });
+                // Disable orbit controls
+                orbitControls.enabled = false;
+                console.log("Pop-up created for:", info.name);
+            }
+
+            function hideBuildingInfo() {
+                const popup = document.querySelector('.popup');
+                const overlay = document.querySelector('.popup-overlay');
+                if (popup) popup.remove();
+                if (overlay) overlay.remove();
+                orbitControls.enabled = true;
+                console.log("Hiding building info pop-up.");
+            }
+
+            function findAndDrawPath(startName, endName) {
+                console.log('Finding path from', startName, 'to', endName);
+                if (currentPathLine) {
+                    scene.remove(currentPathLine);
+                    currentPathLine.geometry.dispose();
+                    currentPathLine.material.dispose();
+                    currentPathLine = null;
+                }
+                const startWp = waypoints.find(wp => wp.name === startName);
+                const endWp = waypoints.find(wp => wp.name === endName);
+                if (!startWp || !endWp) {
+                    alert('Invalid building names. Please select valid buildings.');
+                    return;
+                }
+                const queue = [[startWp.id]];
+                const visited = new Set([startWp.id]);
+                const parentMap = new Map();
+                let foundPath = false;
+                while (queue.length > 0) {
+                    const currentPath = queue.shift();
+                    const currentId = currentPath[currentPath.length - 1];
+                    if (currentId === endWp.id) {
+                        foundPath = true;
+                        break;
+                    }
+                    const neighbors = paths
+                        .filter(p => p.from === currentId && !visited.has(p.to))
+                        .map(p => p.to);
+                    neighbors.forEach(neighborId => {
+                        visited.add(neighborId);
+                        queue.push([...currentPath, neighborId]);
+                        parentMap.set(neighborId, currentId);
+                    });
+                }
+                let pathIds = [];
+                if (foundPath) {
+                    let current = endWp.id;
+                    while (current !== undefined) {
+                        pathIds.unshift(current);
+                        current = parentMap.get(current);
+                    }
+                } else {
+                    pathIds = [startWp.id];
+                    let current = startWp.id;
+                    const tempVisited = new Set();
+                    tempVisited.add(current);
+                    while (current !== endWp.id) {
+                        const nextPath = paths.find(p => p.from === current && !tempVisited.has(p.to));
+                        if (!nextPath) {
+                            alert('No direct or simple path found between these buildings with current path data.');
+                            return;
+                        }
+                        current = nextPath.to;
+                        tempVisited.add(current);
+                        pathIds.push(current);
+                    }
+                }
+                console.log('Path found (IDs):', pathIds);
+                console.log('Path points:', pathIds.map(id => waypoints.find(w => w.id === id)));
+                const points = pathIds.map(id => {
+                    const wp = waypoints.find(w => w.id === id);
+                    const pos = new THREE.Vector3(wp.x, wp.y, wp.z); // No scaling or offset
+                    console.log('Path point position:', wp.name, pos);
+                    return pos;
+                });
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 5 });
+                currentPathLine = new THREE.Line(geometry, material);
+                scene.add(currentPathLine);
+                const box = new THREE.Box3().setFromPoints(points);
+                const center = box.getCenter(new THREE.Vector3());
+                orbitControls.target.copy(center);
+                camera.position.set(center.x, center.y + 10, center.z + 20);
+                camera.lookAt(center);
+                orbitControls.update();
+                console.log('Camera position:', camera.position);
+            }
+
+            if (canvas && mapContainer) {
+                init3DMap();
+            } else {
+                console.error("Canvas or map container not found for Three.js initialization.");
+            }
+
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    if (entry.target.id === 'map-container' && renderer) {
+                        onWindowResize();
+                    }
+                }
+            });
+            resizeObserver.observe(mapContainer);
+        });
+    </script>
+</body>
+</html>

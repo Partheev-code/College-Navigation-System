@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard - College Navigation System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="faculty.css">
+    <style>
+        #street-view-instructions {
+            position: absolute;
+            top: 43%;
+            right: 19.5%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 3px;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+            z-index: 1000;
+        }
+        #street-view-instructions p {
+            margin: 0 0 3px 0;
+        }
+        #street-view-instructions button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        #street-view-instructions button:hover {
+            background-color: #0056b3;
+        }
+        .events-loading {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin: 20px 0;
+        }
+        .events-error {
+            text-align: center;
+            color: #d9534f;
+            font-size: 14px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="toggle-btn" id="toggle-sidebar" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="logo-text">Campus Navigator</span>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar"></div>
+            <div class="user-details">
+                <div class="user-name"></div>
+                <div class="user-role">Faculty</div>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" id="nav-dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li><br><br>
+            <div class="section-title">Teaching</div><br>
+            <li class="nav-item">
+                <a href="#" class="nav-link" id="nav-manage-attendance">
+                    <i class="fas fa-user-check"></i>
+                    <span>Manage Attendance</span>
+                </a>
+            </li><br><br>
+            <div class="section-title">Services</div><br>
+            <li class="nav-item">
+                <a href="manage_appointments.php" class="nav-link">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span>Manage Appointments</span>
+                </a>
+            </li><br>
+            <li class="nav-item">
+                <a href="faculty_notifications.php" class="nav-link">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                </a>
+            </li><br>
+            <li class="nav-item">
+                <a href="logout.php" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li><br>
+            <li class="nav-item">
+                <a onclick="window.location.href='about.html?role=faculty'" class="nav-link">
+                    <i class="fas fa-address-book"></i>
+                    <span>About</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Rest of the HTML remains unchanged -->
+    <div class="main-content" id="main-content">
+        <div class="header">
+            <button class="mobile-toggle-btn" id="mobile-toggle" aria-label="Toggle sidebar on mobile">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="page-title">Faculty Dashboard</h1>
+            <div class="header-actions">
+                <a href="faculty_profile.php" class="profile-btn" aria-label="Edit faculty profile">
+                    <i class="fas fa-user"></i>
+                </a>
+            </div>
+        </div>
+
+        <div id="dashboard-content-wrapper">
+            <div class="dashboard-cards">
+                <div class="card">
+                    <a href="faculty_notifications.php" style="text-decoration: none; color: inherit;">
+                        <div class="card-header">
+                            <div class="card-title">Notifications</div>
+                            <div class="card-icon blue">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="card" id="attendance-summary-card">
+                    <div class="card-header">
+                        <div class="card-title">Student Attendance</div>
+                        <div class="card-icon green">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" id="requests-card">
+                    <div class="card-header">
+                        <div class="card-title">Requests</div>
+                        <div class="card-icon purple">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <a href="manage_appointments.php" style="text-decoration: none; color: inherit;">
+                        <div class="card-header">
+                            <div class="card-title">Appointments</div>
+                            <div class="card-icon red">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="map-section">
+                <div class="map-container" id="map-container">
+                    <canvas id="campusMapCanvas"></canvas>
+                    <div class="map-controls">
+                        <button class="map-control-btn zoom-in-btn" aria-label="Zoom in">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="map-control-btn zoom-out-btn" aria-label="Zoom out">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="map-control-btn location-btn" aria-label="Show navigation search">
+                            <i class="fas fa-location-arrow"></i>
+                        </button>
+                        <button class="map-control-btn street-view-btn" aria-label="Street view">
+                            <i class="fas fa-street-view"></i>
+                        </button>
+                        <button class="map-control-btn enlarge-btn" id="enlarge-btn" aria-label="Enlarge map to full screen">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                    <div class="search-bars" id="search-bars">
+                        <input type="text" id="current-building" placeholder="Current Building" list="building-list">
+                        <input type="text" id="destination-building" placeholder="Destination Building" list="building-list">
+                        <datalist id="building-list"></datalist>
+                        <button id="show-path-btn">Show Path</button>
+                    </div>
+                </div>
+                <div class="upcoming-events">
+                    <div class="section-header">
+                        <h3 class="section-heading">Upcoming Events</h3>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <div class="events-loading" id="events-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                    <div class="events-error" id="events-error" style="display: none;"></div>
+                    <div class="events-list" id="events-list"></div>
+                </div>
+            </div>
+
+            <div class="student-section">
+                <div class="section-header">
+                    <h3 class="section-heading">My Students</h3>
+                    <a href="#" class="view-all" id="view-all-students">View All</a>
+                </div>
+                <div class="student-list-container">
+                    <div class="student-list" id="student-list">
+                        <div class="student-loading" id="student-loading">
+                            <i class="fas fa-spinner fa-spin"></i> Loading...
+                        </div>
+                        <div class="student-error" id="student-error" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="manage-attendance-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h3 class="section-heading">Mark Class Attendance</h3>
+            </div>
+            <div class="attendance-wrapper">
+                <div class="attendance-list-container">
+                    <div id="loading-spinner" class="spinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Roll No.</th>
+                                    <th>Name</th>
+                                    <th>P</th>
+                                    <th>A</th>
+                                    <th>L</th>
+                                    <th>E</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <p id="no-students-message" class="message" style="display: none;">
+                        Select a department, semester, and date to load students.
+                    </p>
+                    <p id="error-message" class="message error" style="display: none;"></p>
+                </div>
+                <form id="attendance-form" class="attendance-controls">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="department-select">Department</label>
+                            <select id="department-select" class="control-input" required>
+                                <option value="">Select Department</option>
+                                <option value="BCA">BCA</option>
+                                <option value="B.com">B.com</option>
+                                <option value="Bio.Tech">Bio.Tech</option>
+                                <option value="Physics">Physics</option>
+                                <option value="English">English</option>
+                                <option value="Maths">Maths</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="semester-select">Semester</label>
+                            <select id="semester-select" class="control-input" required>
+                                <option value="">Select Semester</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="attendance-date">Date</label>
+                            <input type="date" id="attendance-date" class="control-input" required>
+                        </div>
+                        <div class="form-group button-group">
+                            <button type="submit" id="load-students-btn" class="action-btn" aria-label="Load students">
+                                <i class="fas fa-users"></i> Load Students
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <button id="save-attendance-btn" class="action-btn save-btn" style="display: none;" aria-label="Save attendance">
+                <i class="fas fa-save"></i> Save Attendance
+            </button>
+        </div>
+    </div>
+
+    <div id="building-info-panel" class="info-panel">
+        <button id="close-info-panel" class="close-btn">×</button>
+        <h3 id="building-name"></h3>
+        <p id="building-description"></p>
+        <p id="building-details"></p>
+        <div id="building-upcoming-events">
+            <h4>Upcoming Events</h4>
+            <ul id="building-events-list"></ul>
+            <p class="no-events-message" style="display: none;">No upcoming events.</p>
+        </div>
+      
+    </div>
+
+    <div id="street-view-instructions">
+        <p>Use WASD to move, mouse to look around.</p>
+        <p>Press ESC to exit Street View.</p>
+        <button id="enter-street-view-btn">Enter Street View</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+    <script>
+        // JavaScript remains unchanged from your provided code
+        document.addEventListener('DOMContentLoaded', () => {
+            // Session check
+            fetch('check_session.php')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Session check:', data);
+                    if (!data.logged_in || data.user.role !== 'Faculty') {
+                        window.location.href = 'index.html';
+                    } else {
+                        document.querySelector('.user-name').textContent = data.user.username;
+                        document.querySelector('.user-role').textContent = data.user.role;
+                        document.querySelector('.user-avatar').textContent = data.user.username.charAt(0).toUpperCase();
+                        loadStudents();
+                        loadEvents();
+                    }
+                })
+                .catch(error => {
+                    console.error('Session check error:', error);
+                    window.location.href = 'index.html';
+                });
+
+            // Load events dynamically
+            function loadEvents() {
+                const eventsList = document.getElementById('events-list');
+                const eventsLoading = document.getElementById('events-loading');
+                const eventsError = document.getElementById('events-error');
+
+                eventsLoading.style.display = 'block';
+                eventsError.style.display = 'none';
+                eventsList.innerHTML = '';
+
+                fetch('fetch_events.php')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(events => {
+                        console.log('Fetched events:', events);
+                        eventsLoading.style.display = 'none';
+
+                        if (events.length === 0) {
+                            eventsError.textContent = 'No upcoming events available.';
+                            eventsError.style.display = 'block';
+                            return;
+                        }
+
+                        events.forEach(event => {
+                            const eventItem = document.createElement('div');
+                            eventItem.className = 'event-item';
+                            eventItem.innerHTML = `
+                                <div class="event-date">
+                                    <div class="event-day">${event.event_day}</div>
+                                    <div class="event-month">${event.event_month.substring(0, 3)}</div>
+                                </div>
+                                <div class="event-info">
+                                    <div class="event-title">${event.title}</div>
+                                    <div class="event-time">
+                                        <i class="far fa-clock"></i> ${event.event_time}
+                                    </div>
+                                    <div class="event-location">
+                                        <i class="fas fa-map-marker-alt"></i> ${event.location}
+                                    </div>
+                                </div>
+                            `;
+                            eventsList.appendChild(eventItem);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching events:', error);
+                        eventsLoading.style.display = 'none';
+                        eventsError.textContent = 'Failed to load events. Please try again.';
+                        eventsError.style.display = 'block';
+                    });
+            }
+
+            // Sidebar toggle logic
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const toggleBtn = document.getElementById('toggle-sidebar');
+            const mobileToggle = document.getElementById('mobile-toggle');
+
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                toggleBtn.setAttribute('aria-expanded', !sidebar.classList.contains('collapsed'));
+            });
+
+            mobileToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('mobile-show');
+                if (sidebar.classList.contains('mobile-show')) {
+                    sidebar.querySelector('.nav-link').focus();
+                } else {
+                    mobileToggle.focus();
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+                    sidebar.classList.remove('mobile-show');
+                }
+            });
+
+            toggleBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('expanded');
+                    toggleBtn.setAttribute('aria-expanded', !sidebar.classList.contains('collapsed'));
+                }
+            });
+
+            mobileToggle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    sidebar.classList.toggle('mobile-show');
+                }
+            });
+
+            // Map enlarge button logic
+            const enlargeBtn = document.getElementById('enlarge-btn');
+            const mapContainer = document.getElementById('map-container');
+
+            if (enlargeBtn && mapContainer) {
+                enlargeBtn.addEventListener('click', () => {
+                    const isEnlarged = mapContainer.classList.contains('enlarged');
+                    mapContainer.classList.toggle('enlarged');
+                    enlargeBtn.querySelector('i').classList.toggle('fa-expand');
+                    enlargeBtn.querySelector('i').classList.toggle('fa-compress');
+                    enlargeBtn.setAttribute('aria-label', isEnlarged ? 'Reduce map' : 'Enlarge map to full screen');
+                    if (camera && renderer) {
+                        onWindowResize();
+                    }
+                });
+
+                enlargeBtn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        enlargeBtn.click();
+                    }
+                });
+            }
+
+            // Requests navigation
+            const requestsCard = document.getElementById('requests-card');
+            if (requestsCard) {
+                requestsCard.style.cursor = 'pointer';
+                requestsCard.setAttribute('tabindex', '0');
+                requestsCard.setAttribute('role', 'button');
+                requestsCard.addEventListener('click', () => {
+                    window.location.href = 'faculty_requests.php';
+                });
+                requestsCard.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        window.location.href = 'faculty_requests.php';
+                    }
+                });
+            }
+
+            // Student Section Logic
+            const studentList = document.getElementById('student-list');
+            const studentLoading = document.getElementById('student-loading');
+            const studentError = document.getElementById('student-error');
+            const viewAllBtn = document.getElementById('view-all-students');
+            let isExpanded = false;
+
+            async function loadStudents() {
+                studentLoading.style.display = 'block';
+                studentError.style.display = 'none';
+                studentList.innerHTML = '';
+
+                try {
+                    const response = await fetch(`get_students.php?all=${isExpanded}`);
+                    const data = await response.json();
+                    studentLoading.style.display = 'none';
+
+                    if (!data.success) {
+                        studentError.textContent = data.message || 'Failed to load students.';
+                        studentError.style.display = 'block';
+                        return;
+                    }
+
+                    const students = data.students;
+                    if (students.length === 0) {
+                        studentError.textContent = 'No students found in your department.';
+                        studentError.style.display = 'block';
+                        return;
+                    }
+
+                    if (isExpanded) {
+                        const studentsBySemester = {};
+                        students.forEach(student => {
+                            if (!studentsBySemester[student.semester]) {
+                                studentsBySemester[student.semester] = [];
+                            }
+                            studentsBySemester[student.semester].push(student);
+                        });
+
+                        for (const semester in studentsBySemester) {
+                            const semesterDiv = document.createElement('div');
+                            semesterDiv.className = 'semester-group';
+                            semesterDiv.innerHTML = `<h4 class="semester-header">Semester ${semester}</h4>`;
+                            const grid = document.createElement('div');
+                            grid.className = 'student-grid';
+                            studentsBySemester[semester].forEach(s => {
+                                const card = createStudentCard(s);
+                                grid.appendChild(card);
+                            });
+                            semesterDiv.appendChild(grid);
+                            studentList.appendChild(semesterDiv);
+                        }
+                    } else {
+                        students.slice(0, 4).forEach(student => {
+                            const card = createStudentCard(student);
+                            studentList.appendChild(card);
+                        });
+                    }
+                } catch (error) {
+                    studentLoading.style.display = 'none';
+                    console.error('Error loading students:', error);
+                    studentError.textContent = 'Error loading students. Please try again.';
+                    studentError.style.display = 'block';
+                }
+            }
+
+            function createStudentCard(student) {
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                card.dataset.studentId = student.student_id;
+                card.innerHTML = `
+                    <div class="student-avatar">${student.name.charAt(0).toUpperCase()}</div>
+                    <div class="student-info">
+                        <h4>${student.name}</h4>
+                        <p>Semester ${student.semester}</p>
+                    </div>
+                `;
+                card.addEventListener('click', () => showStudentPopup(student));
+                return card;
+            }
+
+            function showStudentPopup(student) {
+                const popup = document.createElement('div');
+                popup.className = 'student-popup';
+                popup.innerHTML = `
+                    <div class="student-popup-content">
+                        <button class="close-btn" aria-label="Close student details">×</button>
+                        <div class="student-popup-header">
+                            <div class="student-avatar">${student.name.charAt(0).toUpperCase()}</div>
+                            <h3>${student.name}</h3>
+                        </div>
+                        <div class="student-details">
+                            <p><strong>Student ID:</strong> ${student.student_id}</p>
+                            <p><strong>Semester:</strong> ${student.semester}</p>
+                            <p><strong>Department:</strong> ${student.department}</p>
+                            <p><strong>Phone:</strong> ${student.phone_no || 'N/A'}</p>
+                            <p><strong>Address:</strong> ${student.address || 'N/A'}</p>
+                            <p><strong>Email:</strong> ${student.email}</p>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(popup);
+
+                popup.querySelector('.close-btn').addEventListener('click', () => popup.remove());
+                popup.addEventListener('click', (e) => {
+                    if (e.target === popup) popup.remove();
+                });
+                document.addEventListener('keydown', function closeOnEsc(e) {
+                    if (e.key === 'Escape') {
+                        popup.remove();
+                        document.removeEventListener('keydown', closeOnEsc);
+                    }
+                });
+            }
+
+            viewAllBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                isExpanded = !isExpanded;
+                viewAllBtn.textContent = isExpanded ? 'Show Less' : 'View All';
+                studentList.classList.toggle('expanded', isExpanded);
+                loadStudents();
+            });
+
+            // Section Switching Logic
+            const navLinks = document.querySelectorAll('.nav-menu .nav-item .nav-link');
+            const dashboardContentWrapper = document.getElementById('dashboard-content-wrapper');
+            const manageAttendanceSection = document.getElementById('manage-attendance-section');
+
+            function activateSection(sectionId) {
+                navLinks.forEach(link => link.classList.remove('active'));
+                if (dashboardContentWrapper) dashboardContentWrapper.style.display = 'none';
+                if (manageAttendanceSection) manageAttendanceSection.style.display = 'none';
+
+                if (sectionId === 'dashboard') {
+                    if (dashboardContentWrapper) dashboardContentWrapper.style.display = 'block';
+                    document.getElementById('nav-dashboard')?.classList.add('active');
+                } else if (sectionId === 'manage-attendance') {
+                    if (manageAttendanceSection) manageAttendanceSection.style.display = 'block';
+                    document.getElementById('nav-manage-attendance')?.classList.add('active');
+                    populateDepartments();
+                    populateSemesters();
+                    document.getElementById('attendance-date').valueAsDate = new Date();
+                    attendanceTableBody.innerHTML = '';
+                    noStudentsMessage.textContent = 'Select a department, semester, and date to load students.';
+                    noStudentsMessage.style.display = 'block';
+                    saveAttendanceBtn.style.display = 'none';
+                    errorMessage.style.display = 'none';
+                }
+            }
+
+            document.getElementById('nav-dashboard')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                activateSection('dashboard');
+            });
+
+            document.getElementById('nav-manage-attendance')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                activateSection('manage-attendance');
+            });
+
+            const attendanceSummaryCard = document.getElementById('attendance-summary-card');
+            if (attendanceSummaryCard) {
+                attendanceSummaryCard.style.cursor = 'pointer';
+                attendanceSummaryCard.setAttribute('tabindex', '0');
+                attendanceSummaryCard.setAttribute('role', 'button');
+                attendanceSummaryCard.addEventListener('click', () => {
+                    activateSection('manage-attendance');
+                });
+                attendanceSummaryCard.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        activateSection('manage-attendance');
+                    }
+                });
+            }
+
+            // Three.js Campus Map Integration
+            const canvas = document.getElementById('campusMapCanvas');
+            let scene, camera, renderer, orbitControls, pointerLockControls, campusModel, currentPathLine;
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            const buildingInfoPanel = document.getElementById('building-info-panel');
+            const closeInfoPanelBtn = document.getElementById('close-info-panel');
+            const buildingNameEl = document.getElementById('building-name');
+            const buildingDescriptionEl = document.getElementById('building-description');
+            const buildingDetailsEl = document.getElementById('building-details');
+            const buildingEventsListEl = document.getElementById('building-events-list');
+            const noEventsMessageEl = document.querySelector('.no-events-message');
+            const zoomInBtn = document.querySelector('.zoom-in-btn');
+            const zoomOutBtn = document.querySelector('.zoom-out-btn');
+            const locationBtn = document.querySelector('.location-btn');
+            const streetViewBtn = document.querySelector('.street-view-btn');
+            const searchBars = document.getElementById('search-bars');
+            const currentBuildingInput = document.getElementById('current-building');
+            const destinationBuildingInput = document.getElementById('destination-building');
+            const showPathBtn = document.getElementById('show-path-btn');
+            const buildingList = document.getElementById('building-list');
+            const streetViewInstructions = document.getElementById('street-view-instructions');
+            const enterStreetViewBtn = document.getElementById('enter-street-view-btn');
+
+            let waypoints = [];
+            let paths = [];
+            const modelScale = 4.606;
+            let modelOffset = new THREE.Vector3();
+
+            let isStreetViewMode = false;
+            const velocity = new THREE.Vector3();
+            let prevTime = performance.now();
+            let moveForward = false;
+            let moveBackward = false;
+            let moveLeft = false;
+            let moveRight = false;
+
+            const buildingData = {
+                'english': {
+                    name: 'English building',
+                    description: 'communicative english ',
+                    details: 'department that fluorishes the english culture.',
+                   
+                },
+                'office': {
+                    name: 'Administration Office',
+                    description: 'The central hub for all administrative services, including student registration, financial aid, and general inquiries.',
+                    details: 'Key departments: Admissions, Finance, Student Affairs, HR. Open: 9:00 AM - 5:00 PM (Weekdays).',
+                    events: []
+                },
+                'security': {
+                    name: 'Campus Security Office',
+                    description: 'Ensuring the safety and well-being of all students, faculty, and staff 24/7.',
+                    details: 'Provides emergency response, lost and found services, and general campus safety information.',
+                    events: []
+                },
+                'greathall': {
+                    name: 'Great Hall Auditorium',
+                    description: 'A multi-purpose venue used for large lectures, conferences, concerts, and graduation ceremonies.',
+                    details: 'Capacity: 1500 seats. Equipped with state-of-the-art audiovisual systems.',
+                    events: []
+                },
+                'aquarium': {
+                    name: 'Campus Aquarium',
+                    description: 'A relaxing space featuring a large aquarium with diverse marine life.',
+                    details: 'Open to students and visitors from 10:00 AM to 6:00 PM.',
+                    events: []
+                }
+            };
+
+            function init3DMap() {
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x87CEEB);
+                camera = new THREE.PerspectiveCamera(90, mapContainer.clientWidth / mapContainer.clientHeight, 0.1, 1000);
+                camera.position.set(0, 0, 100);
+                renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+                renderer.setClearColor(0x87CEEB, 1);
+                renderer.setSize(mapContainer.clientWidth, mapContainer.clientHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 1;
+                renderer.shadowMap.enabled = true;
+
+                orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+                orbitControls.enableDamping = true;
+                orbitControls.dampingFactor = 0.25;
+                orbitControls.enablePan = true;
+                orbitControls.enableRotate = true;
+                orbitControls.enableZoom = true;
+                orbitControls.maxPolarAngle = Math.PI;
+                orbitControls.minPolarAngle = 0;
+                orbitControls.minDistance = 5;
+                orbitControls.maxDistance = 200;
+                orbitControls.panSpeed = 1.0;
+                orbitControls.rotateSpeed = 1.0;
+                orbitControls.zoomSpeed = 1.2;
+                orbitControls.target.set(0, 0, 0);
+
+                pointerLockControls = new THREE.PointerLockControls(camera, document.body);
+                scene.add(pointerLockControls.getObject());
+
+                pointerLockControls.addEventListener('lock', function () {
+                    streetViewInstructions.style.display = 'none';
+                    orbitControls.enabled = false;
+                    isStreetViewMode = true;
+                    velocity.set(0, 0, 0);
+                    camera.position.y = 1.8 * modelScale;
+                    moveForward = false;
+                    moveBackward = false;
+                    moveLeft = false;
+                    moveRight = false;
+                    console.log("PointerLockControls locked, entering Street View.");
+                });
+
+                pointerLockControls.addEventListener('unlock', function () {
+                    streetViewInstructions.style.display = 'block';
+                    orbitControls.enabled = true;
+                    isStreetViewMode = false;
+                    camera.position.set(orbitControls.target.x, orbitControls.target.y + 50, orbitControls.target.z + 100);
+                    orbitControls.update();
+                    console.log("PointerLockControls unlocked, exiting Street View.");
+                });
+
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                scene.add(ambientLight);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+                directionalLight.position.set(10, 20, 10);
+                directionalLight.castShadow = true;
+                directionalLight.shadow.mapSize.width = 2048;
+                directionalLight.shadow.mapSize.height = 2048;
+                directionalLight.shadow.camera.near = 0.5;
+                directionalLight.shadow.camera.far = 50;
+                directionalLight.shadow.camera.left = -25;
+                directionalLight.shadow.camera.right = 25;
+                directionalLight.shadow.camera.top = 25;
+                directionalLight.shadow.camera.bottom = -25;
+                scene.add(directionalLight);
+                const hemisphereLight = new THREE.HemisphereLight(0xb1e1ff, 0xb97a20, 0.5);
+                scene.add(hemisphereLight);
+
+                const loader = new THREE.GLTFLoader();
+                loader.load(
+                    'models/campus_map.glb',
+                    function (gltf) {
+                        campusModel = gltf.scene;
+                        campusModel.scale.set(modelScale, modelScale, modelScale);
+
+                        const box = new THREE.Box3().setFromObject(campusModel);
+                        const center = box.getCenter(new THREE.Vector3());
+
+                        modelOffset.copy(center).negate();
+                        campusModel.position.copy(modelOffset);
+
+                        console.log('Model loaded. Original center:', center);
+                        console.log('Applied model offset:', modelOffset);
+
+                        campusModel.traverse((node) => {
+                            if (node.isMesh) {
+                                node.castShadow = true;
+                                node.receiveShadow = true;
+                                if (node.name) {
+                                    console.log("Mesh Name found in GLB:", node.name);
+                                }
+                            }
+                        });
+                        scene.add(campusModel);
+
+                        orbitControls.target.set(0, 0, 0);
+                        camera.position.set(0, 50, 100);
+                        camera.lookAt(orbitControls.target);
+                        orbitControls.update();
+
+                        loadWaypointsAndPaths();
+                        animate();
+                    },
+                    function (xhr) {
+                        console.log((xhr.loaded / xhr.total * 100).toFixed(2) + '% loaded');
+                    },
+                    function (error) {
+                        console.error('An error happened loading the GLTF model:', error);
+                        const geometry = new THREE.BoxGeometry(5, 5, 5);
+                        const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+                        campusModel = new THREE.Mesh(geometry, material);
+                        scene.add(campusModel);
+                        animate();
+                    }
+                );
+
+                window.addEventListener('resize', onWindowResize, false);
+                canvas.addEventListener('click', onCanvasClick, false);
+
+                zoomInBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!isStreetViewMode && camera && orbitControls) {
+                        const distance = camera.position.distanceTo(orbitControls.target);
+                        if (distance > orbitControls.minDistance) {
+                            camera.position.lerp(orbitControls.target, 0.1);
+                            orbitControls.update();
+                        }
+                    }
+                });
+
+                zoomOutBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!isStreetViewMode && camera && orbitControls) {
+                        const distance = camera.position.distanceTo(orbitControls.target);
+                        if (distance < orbitControls.maxDistance) {
+                            const direction = camera.position.clone().sub(orbitControls.target).normalize();
+                            camera.position.addScaledVector(direction, 5);
+                            orbitControls.update();
+                        }
+                    }
+                });
+
+                locationBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!isStreetViewMode) {
+                        searchBars.style.display = searchBars.style.display === 'block' ? 'none' : 'block';
+                        if (searchBars.style.display === 'block') {
+                            currentBuildingInput.focus();
+                        }
+                    }
+                });
+
+                streetViewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleStreetViewMode();
+                });
+
+                enterStreetViewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    pointerLockControls.lock();
+                });
+
+                showPathBtn.addEventListener('click', () => {
+                    const startName = currentBuildingInput.value.trim();
+                    const endName = destinationBuildingInput.value.trim();
+                    if (startName && endName) {
+                        findAndDrawPath(startName, endName);
+                    } else {
+                        alert('Please enter both current and destination buildings.');
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!isStreetViewMode && !searchBars.contains(e.target) && !locationBtn.contains(e.target) && !buildingInfoPanel.contains(e.target) && !canvas.contains(e.target)) {
+                        searchBars.style.display = 'none';
+                        hideBuildingInfo();
+                    }
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    switch (event.code) {
+                        case 'KeyW':
+                            moveForward = true;
+                            break;
+                        case 'KeyA':
+                            moveLeft = true;
+                            break;
+                        case 'KeyS':
+                            moveBackward = true;
+                            break;
+                        case 'KeyD':
+                            moveRight = true;
+                            break;
+                    }
+                });
+
+                document.addEventListener('keyup', (event) => {
+                    switch (event.code) {
+                        case 'KeyW':
+                            moveForward = false;
+                            break;
+                        case 'KeyA':
+                            moveLeft = false;
+                            break;
+                        case 'KeyS':
+                            moveBackward = false;
+                            break;
+                        case 'KeyD':
+                            moveRight = false;
+                            break;
+                    }
+                });
+            }
+
+            function toggleStreetViewMode() {
+                if (isStreetViewMode) {
+                    pointerLockControls.unlock();
+                } else {
+                    camera.position.set(orbitControls.target.x, 0.1 * modelScale, orbitControls.target.z);
+                    camera.lookAt(orbitControls.target);
+                    pointerLockControls.lock();
+                    streetViewInstructions.style.display = 'block';
+                }
+            }
+
+            function loadWaypointsAndPaths() {
+                fetch('data/waypoints.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        waypoints = data.waypoints;
+                        paths = data.paths;
+                        waypoints.forEach(wp => {
+                            const option = document.createElement('option');
+                            option.value = wp.name;
+                            buildingList.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error loading waypoints:', error));
+            }
+
+            function onWindowResize() {
+                if (camera && renderer && mapContainer) {
+                    camera.aspect = mapContainer.clientWidth / mapContainer.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(mapContainer.clientWidth, mapContainer.clientHeight);
+                    renderer.render(scene, camera);
+                }
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                const time = performance.now();
+                const delta = (time - prevTime) / 1000;
+
+                if (isStreetViewMode) {
+                    velocity.x -= velocity.x * 10.0 * delta;
+                    velocity.z -= velocity.z * 10.0 * delta;
+
+                    if (moveForward) velocity.z -= 400.0 * delta;
+                    if (moveBackward) velocity.z += 400.0 * delta;
+                    if (moveLeft) velocity.x -= 400.0 * delta;
+                    if (moveRight) velocity.x += 400.0 * delta;
+
+                    pointerLockControls.getObject().translateX(velocity.x * delta);
+                    pointerLockControls.getObject().translateZ(velocity.z * delta);
+
+                    if (camera.position.y < 0.1 * modelScale) {
+                        camera.position.y = 0.1 * modelScale;
+                    }
+                } else if (orbitControls) {
+                    orbitControls.update();
+                }
+
+                renderer.render(scene, camera);
+                prevTime = time;
+            }
+
+            function onCanvasClick(event) {
+                if (isStreetViewMode) {
+                    console.log("Click ignored: In street view mode.");
+                    return;
+                }
+
+                if (!campusModel) {
+                    console.warn("Click ignored: Campus model not yet loaded.");
+                    return;
+                }
+
+                if (event.button !== 0) {
+                    console.log("Click ignored: Not a left-click.");
+                    return;
+                }
+
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                console.log("Mouse coords:", { x: mouse.x, y: mouse.y });
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(campusModel.children, true);
+                console.log("Raycaster intersections:", intersects.length);
+
+                if (intersects.length > 0) {
+                    const clickedObject = intersects[0].object;
+                    console.log("Clicked object:", clickedObject.name || "Unnamed", "Type:", clickedObject.type);
+
+                    let buildingNameKey = null;
+                    let currentParent = clickedObject;
+                    let hierarchy = [];
+                    while (currentParent && currentParent !== scene) {
+                        hierarchy.push(currentParent.name || "Unnamed");
+                        if (currentParent.name && buildingData[currentParent.name]) {
+                            buildingNameKey = currentParent.name;
+                            break;
+                        }
+                        currentParent = currentParent.parent;
+                    }
+                    console.log("Object hierarchy:", hierarchy);
+
+                    if (buildingNameKey) {
+                        console.log("Found building:", buildingNameKey);
+                        const info = buildingData[buildingNameKey];
+                        displayBuildingInfo(info);
+                    } else {
+                        console.log("No matching building found in buildingData for clicked object.");
+                        hideBuildingInfo();
+                    }
+                } else {
+                    console.log("No objects intersected by raycaster.");
+                    hideBuildingInfo();
+                }
+            }
+
+            function displayBuildingInfo(info) {
+                console.log("Displaying building info for:", info.name);
+                buildingNameEl.textContent = info.name;
+                buildingDescriptionEl.textContent = info.description;
+                buildingDetailsEl.textContent = info.details;
+                buildingEventsListEl.innerHTML = '';
+                if (info.events && info.events.length > 0) {
+                    info.events.forEach(event => {
+                        const li = document.createElement('li');
+                        li.textContent = `${event.title} - ${event.time} (${event.location})`;
+                        buildingEventsListEl.appendChild(li);
+                    });
+                    noEventsMessageEl.style.display = 'none';
+                    buildingEventsListEl.style.display = 'block';
+                    console.log("Events added:", info.events.length);
+                } else {
+                    buildingEventsListEl.innerHTML = '';
+                    noEventsMessageEl.style.display = 'block';
+                    buildingEventsListEl.style.display = 'none';
+                    console.log("No events for this building.");
+                }
+                buildingInfoPanel.classList.add('visible');
+                mainContent.classList.add('panel-open');
+                orbitControls.enabled = false;
+                console.log("Panel classes:", buildingInfoPanel.className, "Main content classes:", mainContent.className);
+            }
+
+            function hideBuildingInfo() {
+                buildingInfoPanel.classList.remove('visible');
+                mainContent.classList.remove('panel-open');
+                orbitControls.enabled = true;
+                console.log("Hiding building info panel.");
+            }
+
+            function findAndDrawPath(startName, endName) {
+                console.log('Finding path from', startName, 'to', endName);
+                if (currentPathLine) {
+                    scene.remove(currentPathLine);
+                    currentPathLine.geometry.dispose();
+                    currentPathLine.material.dispose();
+                    currentPathLine = null;
+                }
+
+                const startWp = waypoints.find(wp => wp.name === startName);
+                const endWp = waypoints.find(wp => wp.name === endName);
+                if (!startWp || !endWp) {
+                    alert('Invalid building names. Please select valid buildings.');
+                    return;
+                }
+
+                const queue = [[startWp.id]];
+                const visited = new Set([startWp.id]);
+                const parentMap = new Map();
+                let foundPath = false;
+
+                while (queue.length > 0) {
+                    const currentPath = queue.shift();
+                    const currentId = currentPath[currentPath.length - 1];
+
+                    if (currentId === endWp.id) {
+                        foundPath = true;
+                        break;
+                    }
+
+                    const neighbors = paths
+                        .filter(p => p.from === currentId && !visited.has(p.to))
+                        .map(p => p.to);
+
+                    neighbors.forEach(neighborId => {
+                        visited.add(neighborId);
+                        queue.push([...currentPath, neighborId]);
+                        parentMap.set(neighborId, currentId);
+                    });
+                }
+
+                let pathIds = [];
+                if (foundPath) {
+                    let current = endWp.id;
+                    while (current !== undefined) {
+                        pathIds.unshift(current);
+                        current = parentMap.get(current);
+                    }
+                } else {
+                    pathIds = [startWp.id];
+                    let current = startWp.id;
+                    const tempVisited = new Set();
+                    tempVisited.add(current);
+                    while (current !== endWp.id) {
+                        const nextPath = paths.find(p => p.from === current && !tempVisited.has(p.to));
+                        if (!nextPath) {
+                            alert('No direct or simple path found between these buildings with current path data.');
+                            return;
+                        }
+                        current = nextPath.to;
+                        tempVisited.add(current);
+                        pathIds.push(current);
+                    }
+                }
+                console.log('Path found (IDs):', pathIds);
+                console.log('Path points:', pathIds.map(id => waypoints.find(w => w.id === id)));
+
+                const points = pathIds.map(id => {
+                    const wp = waypoints.find(w => w.id === id);
+                    const pos = new THREE.Vector3(wp.x, wp.y, wp.z)
+                        .multiplyScalar(modelScale)
+                        .add(modelOffset);
+                    console.log('Path point position:', wp.name, pos);
+                    return pos;
+                });
+
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 5 });
+                currentPathLine = new THREE.Line(geometry, material);
+                scene.add(currentPathLine);
+
+                const box = new THREE.Box3().setFromPoints(points);
+                const center = box.getCenter(new THREE.Vector3());
+                orbitControls.target.copy(center);
+                camera.position.set(center.x, center.y + 10, center.z + 20);
+                camera.lookAt(center);
+                orbitControls.update();
+                console.log('Camera position:', camera.position);
+            }
+
+            closeInfoPanelBtn.addEventListener('click', hideBuildingInfo);
+
+            // Attendance Section Specific Logic
+            const attendanceForm = document.getElementById('attendance-form');
+            const departmentSelect = document.getElementById('department-select');
+            const semesterSelect = document.getElementById('semester-select');
+            const attendanceDateInput = document.getElementById('attendance-date');
+            const attendanceTableBody = document.querySelector('#attendance-table tbody');
+            const saveAttendanceBtn = document.getElementById('save-attendance-btn');
+            const noStudentsMessage = document.getElementById('no-students-message');
+            const errorMessage = document.getElementById('error-message');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            async function populateDepartments() {
+                try {
+                    const response = await fetch('get_departments.php');
+                    const data = await response.json();
+                    departmentSelect.innerHTML = '<option value="">Select Department</option>';
+                    if (data.success) {
+                        data.departments.forEach(dept => {
+                            const option = document.createElement('option');
+                            option.value = dept.id;
+                            option.textContent = dept.name;
+                            departmentSelect.appendChild(option);
+                        });
+                    } else {
+                        errorMessage.textContent = data.message || 'Failed to load departments.';
+                        errorMessage.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error fetching departments:', error);
+                    errorMessage.textContent = 'Error loading departments.';
+                    errorMessage.style.display = 'block';
+                }
+            }
+
+            function populateSemesters() {
+                semesterSelect.innerHTML = '<option value="">Select Semester</option>';
+                for (let i = 1; i <= 8; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `Semester ${i}`;
+                    semesterSelect.appendChild(option);
+                }
+            }
+
+            attendanceForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const department = departmentSelect.value;
+                const semester = semesterSelect.value;
+                const attendanceDate = attendanceDateInput.value;
+
+                if (!department || !semester || !attendanceDate) {
+                    errorMessage.textContent = 'Please select a department, semester, and date.';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                attendanceTableBody.innerHTML = '';
+                noStudentsMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                saveAttendanceBtn.style.display = 'none';
+                loadingSpinner.style.display = 'flex';
+
+                try {
+                    const response = await fetch(`mark_attendance.php?department=${encodeURIComponent(department)}&semester=${encodeURIComponent(semester)}&date=${encodeURIComponent(attendanceDate)}`);
+                    const data = await response.json();
+
+                    loadingSpinner.style.display = 'none';
+
+                    if (data.success) {
+                        if (data.students.length === 0) {
+                            noStudentsMessage.textContent = 'No students found for the selected department and semester.';
+                            noStudentsMessage.style.display = 'block';
+                            return;
+                        }
+
+                        data.students.forEach(student => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${student.roll_number}</td>
+                                <td>${student.name}</td>
+                                <td><input type="radio" name="attendance_${student.student_id}" value="P" checked></td>
+                                <td><input type="radio" name="attendance_${student.student_id}" value="A"></td>
+                                <td><input type="radio" name="attendance_${student.student_id}" value="L"></td>
+                                <td><input type="radio" name="attendance_${student.student_id}" value="E"></td>
+                            `;
+                            attendanceTableBody.appendChild(tr);
+                        });
+
+                        saveAttendanceBtn.style.display = 'block';
+                    } else {
+                        errorMessage.textContent = data.message || 'Failed to load students.';
+                        errorMessage.style.display = 'block';
+                    }
+                } catch (error) {
+                    loadingSpinner.style.display = 'none';
+                    console.error('Error loading students:', error);
+                    errorMessage.textContent = 'Error loading students. Please try again.';
+                    errorMessage.style.display = 'block';
+                }
+            });
+
+            saveAttendanceBtn.addEventListener('click', async () => {
+                const department = departmentSelect.value;
+                const semester = semesterSelect.value;
+                const attendanceDate = attendanceDateInput.value;
+
+                if (!department || !semester || !attendanceDate) {
+                    errorMessage.textContent = 'Please select a department, semester, and date.';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                const attendanceData = [];
+                document.querySelectorAll('#attendance-table tbody tr').forEach(row => {
+                    const studentId = row.querySelector('input[name^="attendance_"]').name.split('_')[1];
+                    const selectedStatus = row.querySelector(`input[name="attendance_${studentId}"]:checked`);
+                    if (selectedStatus) {
+                        attendanceData.push({
+                            student_id: parseInt(studentId),
+                            status: selectedStatus.value
+                        });
+                    }
+                });
+
+                if (attendanceData.length === 0) {
+                    errorMessage.textContent = 'No attendance data to save.';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                loadingSpinner.style.display = 'flex';
+                errorMessage.style.display = 'none';
+
+                try {
+                    const response = await fetch('mark_attendance.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            department,
+                            semester,
+                            date: attendanceDate,
+                            attendance: attendanceData
+                        })
+                    });
+                    const result = await response.json();
+                    loadingSpinner.style.display = 'none';
+
+                    if (result.success) {
+                        alert('Attendance saved successfully!');
+                        attendanceForm.reset();
+                        attendanceTableBody.innerHTML = '';
+                        noStudentsMessage.textContent = 'Select a department, semester, and date to load students.';
+                        noStudentsMessage.style.display = 'block';
+                        saveAttendanceBtn.style.display = 'none';
+                    } else {
+                        errorMessage.textContent = result.message || 'Failed to save attendance.';
+                        errorMessage.style.display = 'block';
+                    }
+                } catch (error) {
+                    loadingSpinner.style.display = 'none';
+                    console.error('Error saving attendance:', error);
+                    errorMessage.textContent = 'Error saving attendance. Please try again.';
+                    errorMessage.style.display = 'block';
+                }
+            });
+
+            if (canvas && mapContainer) {
+                init3DMap();
+            } else {
+                console.error('Canvas or map container not found for Three.js initialization.');
+                mapError.textContent = 'Map canvas not found.';
+                mapError.style.display = 'block';
+            }
+
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    if (entry.target.id === 'map-container' && renderer) {
+                        onWindowResize();
+                    }
+                }
+            });
+            resizeObserver.observe(mapContainer);
+
+            activateSection('dashboard');
+        });
+    </script>
+</body>
+</html>

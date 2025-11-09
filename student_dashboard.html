@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - College Navigation System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="student.css">
+    <style>
+        #street-view-instructions {
+            position: absolute;
+            top: 43%;
+            right: 19.5%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 3px;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+            z-index: 1000;
+        }
+        #street-view-instructions p {
+            margin: 0 0 3px 0;
+        }
+        #street-view-instructions button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        #street-view-instructions button:hover {
+            background-color: #0056b3;
+        }
+        .events-loading {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin: 20px 0;
+        }
+        .events-error {
+            text-align: center;
+            color: #d9534f;
+            font-size: 14px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="toggle-btn" id="toggle-sidebar" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="logo-text">Campus Navigator</span>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar"></div>
+            <div class="user-details">
+                <div class="user-name"></div>
+                <div class="user-role"></div>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" id="nav-dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li><br><br>
+            <div class="section-title">Academic</div><br>
+            <li class="nav-item">
+                <a href="attendance.html" class="nav-link" id="nav-attendance">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li><br><br>
+            <div class="section-title">Services</div><br>
+            <li class="nav-item">
+                <a href="notifications.php" class="nav-link">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                </a>
+            </li><br><br>
+            <li class="nav-item">
+                <a href="logout.php" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li><br><br>
+              <li class="nav-item">
+                <a onclick="window.location.href='about.html?role=student'" class="nav-link">
+                    <i class="fas fa-address-book"></i>
+                    <span>About</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <div class="header">
+            <button class="mobile-toggle-btn" id="mobile-toggle" aria-label="Toggle sidebar on mobile">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="page-title">Dashboard</h1>
+            <div class="header-actions">
+                <a href="student_profile.php" class="profile-btn" aria-label="Edit user profile">
+                    <i class="fas fa-user"></i>
+                </a>
+            </div>
+        </div>
+
+        <div id="dashboard-content-wrapper">
+            <div class="dashboard-cards">
+                <div class="card" id="attendance-card">
+                    <div class="card-header">
+                        <div class="card-title">Attendance</div>
+                        <div class="card-icon green">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <a href="notifications.php" style="text-decoration: none; color: inherit;">
+                        <div class="card-header">
+                            <div class="card-title">Notifications</div>
+                            <div class="card-icon red">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="card" id="requests-card">
+                    <div class="card-header">
+                        <div class="card-title">Requests</div>
+                        <div class="card-icon purple">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="map-section">
+                <div class="map-container" id="map-container">
+                    <canvas id="campusMapCanvas"></canvas>
+                    <div class="map-controls">
+                        <button class="map-control-btn zoom-in-btn" aria-label="Zoom in">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="map-control-btn zoom-out-btn" aria-label="Zoom out">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="map-control-btn location-btn" aria-label="Show navigation search">
+                            <i class="fas fa-location-arrow"></i>
+                        </button>
+                        <button class="map-control-btn street-view-btn" aria-label="Street view">
+                            <i class="fas fa-street-view"></i>
+                        </button>
+                        <button class="map-control-btn enlarge-btn" id="enlarge-btn" aria-label="Enlarge map to full screen">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                    <div class="search-bars" id="search-bars">
+                        <input type="text" id="current-building" placeholder="Current Building" list="building-list">
+                        <input type="text" id="destination-building" placeholder="Destination Building" list="building-list">
+                        <datalist id="building-list"></datalist>
+                        <button id="show-path-btn">Show Path</button>
+                    </div>
+                </div>
+                <div class="upcoming-events">
+                    <div class="section-header">
+                        <h3 class="section-heading">Upcoming Events</h3>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <div class="events-loading" id="events-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                    <div class="events-error" id="events-error" style="display: none;"></div>
+                    <div class="events-list" id="events-list"></div>
+                </div>
+            </div>
+
+            <div class="faculty-section" id="faculty-section">
+                <div class="section-header">
+                    <h3 class="section-heading">Popular Faculty</h3>
+                    <a href="#" class="view-all" id="view-all-faculty">View All</a>
+                </div>
+                <div class="faculty-list" id="faculty-list">
+                    <div class="faculty-loading" id="faculty-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                    <div class="faculty-error" id="faculty-error" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="building-info-panel" class="info-panel">
+        <button id="close-info-panel" class="close-btn">×</button>
+        <h3 id="building-name"></h3>
+        <p id="building-description"></p>
+        <p id="building-details"></p>
+        <div id="building-upcoming-events">
+            <h4>Upcoming Events</h4>
+            <ul id="building-events-list"></ul>
+            <p class="no-events-message" style="display: none;">No upcoming events.</p>
+        </div>
+       
+    </div>
+
+    <div id="street-view-instructions">
+        <p>Use WASD to move, mouse to look around.</p>
+        <p>Press ESC to exit Street View.</p>
+        <button id="enter-street-view-btn">Enter Street View</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Session check
+            fetch('check_session.php')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Session check:', data);
+                    if (!data.logged_in || data.user.role !== 'Student') {
+                        window.location.href = 'index.html';
+                    } else {
+                        document.querySelector('.user-name').textContent = data.user.username;
+                        document.querySelector('.user-role').textContent = data.user.role;
+                        document.querySelector('.user-avatar').textContent = data.user.username.charAt(0).toUpperCase();
+                        loadFacultyData();
+                        loadEvents();
+                    }
+                })
+                .catch(error => {
+                    console.error('Session check error:', error);
+                    window.location.href = 'index.html';
+                });
+
+            // Sidebar toggle logic
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const toggleBtn = document.getElementById('toggle-sidebar');
+            const mobileToggle = document.getElementById('mobile-toggle');
+
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                toggleBtn.setAttribute('aria-expanded', !sidebar.classList.contains('collapsed'));
+            });
+
+            mobileToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('mobile-show');
+                if (sidebar.classList.contains('mobile-show')) {
+                    sidebar.querySelector('.nav-link').focus();
+                } else {
+                    mobileToggle.focus();
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+                    sidebar.classList.remove('mobile-show');
+                }
+            });
+
+            toggleBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('expanded');
+                    toggleBtn.setAttribute('aria-expanded', !sidebar.classList.contains('collapsed'));
+                }
+            });
+
+            mobileToggle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    sidebar.classList.toggle('mobile-show');
+                }
+            });
+
+            // Load events dynamically
+            function loadEvents() {
+                const eventsList = document.getElementById('events-list');
+                const eventsLoading = document.getElementById('events-loading');
+                const eventsError = document.getElementById('events-error');
+
+                eventsLoading.style.display = 'block';
+                eventsError.style.display = 'none';
+                eventsList.innerHTML = '';
+
+                fetch('fetch_events.php')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(events => {
+                        console.log('Fetched events:', events);
+                        eventsLoading.style.display = 'none';
+
+                        if (events.length === 0) {
+                            eventsError.textContent = 'No upcoming events available.';
+                            eventsError.style.display = 'block';
+                            return;
+                        }
+
+                        events.forEach(event => {
+                            const eventItem = document.createElement('div');
+                            eventItem.className = 'event-item';
+                            eventItem.innerHTML = `
+                                <div class="event-date">
+                                    <div class="event-day">${event.event_day}</div>
+                                    <div class="event-month">${event.event_month.substring(0, 3)}</div>
+                                </div>
+                                <div class="event-info">
+                                    <div class="event-title">${event.title}</div>
+                                    <div class="event-time">
+                                        <i class="far fa-clock"></i> ${event.event_time}
+                                    </div>
+                                    <div class="event-location">
+                                        <i class="fas fa-map-marker-alt"></i> ${event.location}
+                                    </div>
+                                </div>
+                            `;
+                            eventsList.appendChild(eventItem);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching events:', error);
+                        eventsLoading.style.display = 'none';
+                        eventsError.textContent = 'Failed to load events. Please try again.';
+                        eventsError.style.display = 'block';
+                    });
+            }
+
+            // Map enlarge button logic
+            const enlargeBtn = document.getElementById('enlarge-btn');
+            const mapContainer = document.getElementById('map-container');
+
+            if (enlargeBtn && mapContainer) {
+                enlargeBtn.addEventListener('click', () => {
+                    const isEnlarged = mapContainer.classList.contains('enlarged');
+                    mapContainer.classList.toggle('enlarged');
+                    enlargeBtn.querySelector('i').classList.toggle('fa-expand');
+                    enlargeBtn.querySelector('i').classList.toggle('fa-compress');
+                    enlargeBtn.setAttribute('aria-label', isEnlarged ? 'Reduce map' : 'Enlarge map to full screen');
+                    if (camera && renderer) {
+                        onWindowResize();
+                    }
+                });
+
+                enlargeBtn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        enlargeBtn.click();
+                    }
+                });
+            }
+
+            // Attendance navigation
+            const attendanceCard = document.getElementById('attendance-card');
+            if (attendanceCard) {
+                attendanceCard.style.cursor = 'pointer';
+                attendanceCard.setAttribute('tabindex', '0');
+                attendanceCard.setAttribute('role', 'button');
+                attendanceCard.addEventListener('click', () => {
+                    window.location.href = 'attendance.html';
+                });
+                attendanceCard.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        window.location.href = 'attendance.html';
+                    }
+                });
+            }
+
+            // Requests navigation
+            const requestsCard = document.getElementById('requests-card');
+            if (requestsCard) {
+                requestsCard.style.cursor = 'pointer';
+                requestsCard.setAttribute('tabindex', '0');
+                requestsCard.setAttribute('role', 'button');
+                requestsCard.addEventListener('click', () => {
+                    window.location.href = 'requests.php';
+                });
+                requestsCard.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        window.location.href = 'requests.php';
+                    }
+                });
+            }
+
+            // Faculty Data Loading
+            const facultySection = document.getElementById('faculty-section');
+            const facultyList = document.getElementById('faculty-list');
+            const facultyLoading = document.getElementById('faculty-loading');
+            const facultyError = document.getElementById('faculty-error');
+            const viewAllBtn = document.getElementById('view-all-faculty');
+            let isExpanded = false;
+
+            async function loadFacultyData(mode = 'default') {
+                facultyLoading.style.display = 'block';
+                facultyError.style.display = 'none';
+                facultyList.innerHTML = '<div class="faculty-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+
+                try {
+                    const response = await fetch(`get_faculty.php?mode=${mode}`);
+                    const data = await response.json();
+                    console.log('Faculty data response:', data);
+                    facultyLoading.style.display = 'none';
+                    facultyList.innerHTML = '';
+
+                    if (data.success) {
+                        if (mode === 'all') {
+                            const facultyByDept = data.faculty_by_dept;
+                            if (Object.keys(facultyByDept).length === 0) {
+                                facultyError.textContent = 'No faculty available.';
+                                facultyError.style.display = 'block';
+                            } else {
+                                for (const dept in facultyByDept) {
+                                    const deptHeader = document.createElement('h4');
+                                    deptHeader.className = 'department-header';
+                                    deptHeader.textContent = `${dept} Faculty`;
+                                    facultyList.appendChild(deptHeader);
+
+                                    const deptGrid = document.createElement('div');
+                                    deptGrid.className = 'faculty-grid';
+                                    facultyByDept[dept].forEach(faculty => {
+                                        const card = document.createElement('div');
+                                        card.className = 'faculty-card';
+                                        card.dataset.facultyId = faculty.faculty_id;
+                                        card.innerHTML = `
+                                            <div class="faculty-avatar">${faculty.name.charAt(0).toUpperCase()}</div>
+                                            <div class="faculty-info">
+                                                <h4>${faculty.name}</h4>
+                                                <p>${faculty.department}</p>
+                                                <p>Available: ${faculty.available_day}</p>
+                                            </div>
+                                        `;
+                                        deptGrid.appendChild(card);
+                                    });
+                                    facultyList.appendChild(deptGrid);
+                                }
+                            }
+                        } else {
+                            const faculty = data.faculty;
+                            if (faculty.length === 0) {
+                                facultyError.textContent = data.debug || 'No faculty available in your department.';
+                                facultyError.style.display = 'block';
+                            } else {
+                                const facultyGrid = document.createElement('div');
+                                facultyGrid.className = 'faculty-grid';
+                                faculty.forEach(faculty => {
+                                    const card = document.createElement('div');
+                                    card.className = 'faculty-card';
+                                    card.dataset.facultyId = faculty.faculty_id;
+                                    card.innerHTML = `
+                                        <div class="faculty-avatar">${faculty.name.charAt(0).toUpperCase()}</div>
+                                        <div class="faculty-info">
+                                            <h4>${faculty.name}</h4>
+                                            <p>${faculty.department}</p>
+                                            <p>Available: ${faculty.available_day}</p>
+                                        </div>
+                                    `;
+                                    facultyGrid.appendChild(card);
+                                });
+                                facultyList.appendChild(facultyGrid);
+                            }
+                        }
+                    } else {
+                        facultyError.textContent = (data.debug ? `${data.message} (${data.debug})` : data.message) || 'Failed to load faculty data.';
+                        facultyError.style.display = 'block';
+                    }
+
+                    document.querySelectorAll('.faculty-card').forEach(card => {
+                        card.addEventListener('click', (e) => {
+                            if (e.target.classList.contains('book-btn')) return;
+                            const facultyId = card.dataset.facultyId;
+                            showFacultyPopup(facultyId, data);
+                        });
+                    });
+                } catch (error) {
+                    facultyLoading.style.display = 'none';
+                    console.error('Error loading faculty:', error);
+                    facultyError.textContent = 'Error loading faculty data. Please try again.';
+                    facultyError.style.display = 'block';
+                }
+            }
+
+            function showFacultyPopup(facultyId, data) {
+                let faculty = null;
+                if (data.faculty) {
+                    faculty = data.faculty.find(f => f.faculty_id == facultyId);
+                } else if (data.faculty_by_dept) {
+                    for (const dept in data.faculty_by_dept) {
+                        faculty = data.faculty_by_dept[dept].find(f => f.faculty_id == facultyId);
+                        if (faculty) break;
+                    }
+                }
+
+                if (!faculty) {
+                    alert('Faculty details not found.');
+                    return;
+                }
+
+                const popup = document.createElement('div');
+                popup.className = 'faculty-popup';
+                popup.innerHTML = `
+                    <div class="faculty-popup-content">
+                        <button class="close-btn" aria-label="Close faculty details">×</button>
+                        <div class="faculty-popup-header">
+                            <div class="faculty-avatar">${faculty.name.charAt(0).toUpperCase()}</div>
+                            <h3>${faculty.name}</h3>
+                        </div>
+                        <div class="faculty-details">
+                            <p><strong>Faculty ID:</strong> ${faculty.faculty_id}</p>
+                            <p><strong>Department:</strong> ${faculty.department}</p>
+                            <p><strong>Office Location:</strong> ${faculty.office_location}</p>
+                            <p><strong>Email:</strong> ${faculty.email}</p>
+                            <p><strong>Course:</strong> ${faculty.course}</p>
+                            <p><strong>Phone Number:</strong> ${faculty.phone_no}</p>
+                            <p><strong>Available Days:</strong> ${faculty.available_day}</p>
+                        </div>
+                        <a href="book_appointment.php?faculty_id=${faculty.faculty_id}" class="book-btn">Book Appointment</a>
+                    </div>
+                `;
+                document.body.appendChild(popup);
+
+                const closeBtn = popup.querySelector('.close-btn');
+                closeBtn.addEventListener('click', () => {
+                    popup.remove();
+                });
+
+                popup.addEventListener('click', (e) => {
+                    if (e.target === popup) {
+                        popup.remove();
+                    }
+                });
+
+                document.addEventListener('keydown', function closeOnEsc(e) {
+                    if (e.key === 'Escape') {
+                        popup.remove();
+                        document.removeEventListener('keydown', closeOnEsc);
+                    }
+                });
+            }
+
+            viewAllBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                isExpanded = !isExpanded;
+                facultySection.classList.toggle('expanded', isExpanded);
+                viewAllBtn.textContent = isExpanded ? 'Show Less' : 'View All';
+                loadFacultyData(isExpanded ? 'all' : 'default');
+            });
+
+            // Three.js Campus Map Integration
+            const canvas = document.getElementById('campusMapCanvas');
+            let scene, camera, renderer, orbitControls, pointerLockControls, campusModel, currentPathLine;
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            const buildingInfoPanel = document.getElementById('building-info-panel');
+            const closeInfoPanelBtn = document.getElementById('close-info-panel');
+            const buildingNameEl = document.getElementById('building-name');
+            const buildingDescriptionEl = document.getElementById('building-description');
+            const buildingDetailsEl = document.getElementById('building-details');
+            const buildingEventsListEl = document.getElementById('building-events-list');
+            const noEventsMessageEl = document.querySelector('.no-events-message');
+            const zoomInBtn = document.querySelector('.zoom-in-btn');
+            const zoomOutBtn = document.querySelector('.zoom-out-btn');
+            const locationBtn = document.querySelector('.location-btn');
+            const streetViewBtn = document.querySelector('.street-view-btn');
+            const searchBars = document.getElementById('search-bars');
+            const currentBuildingInput = document.getElementById('current-building');
+            const destinationBuildingInput = document.getElementById('destination-building');
+            const showPathBtn = document.getElementById('show-path-btn');
+            const buildingList = document.getElementById('building-list');
+            const streetViewInstructions = document.getElementById('street-view-instructions');
+            const enterStreetViewBtn = document.getElementById('enter-street-view-btn');
+
+            let waypoints = [];
+            let paths = [];
+            const modelScale = 4.606;
+            let modelOffset = new THREE.Vector3();
+
+            let isStreetViewMode = false;
+            const velocity = new THREE.Vector3();
+            let prevTime = performance.now();
+            let moveForward = false;
+            let moveBackward = false;
+            let moveLeft = false;
+            let moveRight = false;
+
+            const buildingData = {
+                'english': {
+                    name: 'English building',
+                    description: 'communicative english ',
+                    details: 'department that fluorishes the english culture.',
+                   
+                },
+                'Bvoc': {
+                    name: 'Bvoc building',
+                    description: 'B Voc (Bachelor of Vocational Education)',
+                    details: 'it is a ug program that includes two department . Bvoc IT and Bvoc TT',
+                    
+                    
+                },
+                'office': {
+                    name: 'Administration Office',
+                    description: 'The central hub for all administrative services, including student registration, financial aid, and general inquiries.',
+                    details: 'Key departments: Admissions, Finance, Student Affairs, HR. Open: 9:00 AM - 5:00 PM (Weekdays).',
+                    events: []
+                },
+                'security': {
+                    name: 'Campus Security Office',
+                    description: 'Ensuring the safety and well-being of all students, faculty, and staff 24/7.',
+                    details: 'Provides emergency response, lost and found services, and general campus safety information.',
+                    events: []
+                },
+                'greathall': {
+                    name: 'Great Hall Auditorium',
+                    description: 'A multi-purpose venue used for large lectures, conferences, concerts, and graduation ceremonies.',
+                    details: 'Capacity: 1500 seats. Equipped with state-of-the-art audiovisual systems.',
+                    events: []
+                },
+                'aquarium': {
+                    name: 'Campus Aquarium',
+                    description: 'A relaxing space featuring a large aquarium with diverse marine life.',
+                    details: 'Open to students and visitors from 10:00 AM to 6:00 PM.',
+                    events: []
+                }
+            };
+
+            function init3DMap() {
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x87CEEB);
+                camera = new THREE.PerspectiveCamera(90, mapContainer.clientWidth / mapContainer.clientHeight, 0.1, 1000);
+                camera.position.set(0, 0, 100);
+                renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+                renderer.setClearColor(0x87CEEB, 1);
+                renderer.setSize(mapContainer.clientWidth, mapContainer.clientHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 1;
+                renderer.shadowMap.enabled = true;
+
+                orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+                orbitControls.enableDamping = true;
+                orbitControls.dampingFactor = 0.25;
+                orbitControls.enablePan = true;
+                orbitControls.enableRotate = true;
+                orbitControls.enableZoom = true;
+                orbitControls.maxPolarAngle = Math.PI;
+                orbitControls.minPolarAngle = 0;
+                orbitControls.minDistance = 5;
+                orbitControls.maxDistance = 200;
+                orbitControls.panSpeed = 1.0;
+                orbitControls.rotateSpeed = 1.0;
+                orbitControls.zoomSpeed = 1.2;
+                orbitControls.target.set(0, 0, 0);
+
+                pointerLockControls = new THREE.PointerLockControls(camera, document.body);
+                scene.add(pointerLockControls.getObject());
+
+                pointerLockControls.addEventListener('lock', function () {
+                    streetViewInstructions.style.display = 'none';
+                    orbitControls.enabled = false;
+                    isStreetViewMode = true;
+                    velocity.set(0, 0, 0);
+                    camera.position.y = 1.8 * modelScale;
+                    moveForward = false;
+                    moveBackward = false;
+                    moveLeft = false;
+                    moveRight = false;
+                    console.log("PointerLockControls locked, entering Street View.");
+                });
+
+                pointerLockControls.addEventListener('unlock', function () {
+                    streetViewInstructions.style.display = 'block';
+                    orbitControls.enabled = true;
+                    isStreetViewMode = false;
+                    camera.position.set(orbitControls.target.x, orbitControls.target.y + 50, orbitControls.target.z + 100);
+                    orbitControls.update();
+                    console.log("PointerLockControls unlocked, exiting Street View.");
+                });
+
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                scene.add(ambientLight);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+                directionalLight.position.set(10, 20, 10);
+                directionalLight.castShadow = true;
+                directionalLight.shadow.mapSize.width = 2048;
+                directionalLight.shadow.mapSize.height = 2048;
+                directionalLight.shadow.camera.near = 0.5;
+                directionalLight.shadow.camera.far = 50;
+                directionalLight.shadow.camera.left = -25;
+                directionalLight.shadow.camera.right = 25;
+                directionalLight.shadow.camera.top = 25;
+                directionalLight.shadow.camera.bottom = -25;
+                scene.add(directionalLight);
+                const hemisphereLight = new THREE.HemisphereLight(0xb1e1ff, 0xb97a20, 0.5);
+                scene.add(hemisphereLight);
+
+                const loader = new THREE.GLTFLoader();
+                loader.load(
+                    'models/campus_map.glb',
+                    function (gltf) {
+                        campusModel = gltf.scene;
+                        campusModel.scale.set(modelScale, modelScale, modelScale);
+
+                        const box = new THREE.Box3().setFromObject(campusModel);
+                        const center = box.getCenter(new THREE.Vector3());
+
+                        modelOffset.copy(center).negate();
+                        campusModel.position.copy(modelOffset);
+
+                        console.log('Model loaded. Original center:', center);
+                        console.log('Applied model offset:', modelOffset);
+
+                        campusModel.traverse((node) => {
+                            if (node.isMesh) {
+                                node.castShadow = true;
+                                node.receiveShadow = true;
+                                if (node.name) {
+                                    console.log("Mesh Name found in GLB:", node.name);
+                                }
+                            }
+                        });
+                        scene.add(campusModel);
+
+                        orbitControls.target.set(0, 0, 0);
+                        camera.position.set(0, 50, 100);
+                        camera.lookAt(orbitControls.target);
+                        orbitControls.update();
+
+                        loadWaypointsAndPaths();
+                        animate();
+                    },
+                    function (xhr) {
+                        console.log((xhr.loaded / xhr.total * 100).toFixed(2) + '% loaded');
+                    },
+                    function (error) {
+                        console.error('An error happened loading the GLTF model:', error);
+                        const geometry = new THREE.BoxGeometry(5, 5, 5);
+                        const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+                        campusModel = new THREE.Mesh(geometry, material);
+                        scene.add(campusModel);
+                        animate();
+                    }
+                );
+
+                window.addEventListener('resize', onWindowResize, false);
+                canvas.addEventListener('click', onCanvasClick, false);
+
+                zoomInBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!isStreetViewMode && camera && orbitControls) {
+                        const distance = camera.position.distanceTo(orbitControls.target);
+                        if (distance > orbitControls.minDistance) {
+                            camera.position.lerp(orbitControls.target, 0.1);
+                            orbitControls.update();
+                        }
+                    }
+                });
+
+                zoomOutBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!isStreetViewMode && camera && orbitControls) {
+                        const distance = camera.position.distanceTo(orbitControls.target);
+                        if (distance < orbitControls.maxDistance) {
+                            const direction = camera.position.clone().sub(orbitControls.target).normalize();
+                            camera.position.addScaledVector(direction, 5);
+                            orbitControls.update();
+                        }
+                    }
+                });
+
+                locationBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!isStreetViewMode) {
+                        searchBars.style.display = searchBars.style.display === 'block' ? 'none' : 'block';
+                        if (searchBars.style.display === 'block') {
+                            currentBuildingInput.focus();
+                        }
+                    }
+                });
+
+                streetViewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleStreetViewMode();
+                });
+
+                enterStreetViewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    pointerLockControls.lock();
+                });
+
+                showPathBtn.addEventListener('click', () => {
+                    const startName = currentBuildingInput.value.trim();
+                    const endName = destinationBuildingInput.value.trim();
+                    if (startName && endName) {
+                        findAndDrawPath(startName, endName);
+                    } else {
+                        alert('Please enter both current and destination buildings.');
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!isStreetViewMode && !searchBars.contains(e.target) && !locationBtn.contains(e.target) && !buildingInfoPanel.contains(e.target) && !canvas.contains(e.target)) {
+                        searchBars.style.display = 'none';
+                        hideBuildingInfo();
+                    }
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    switch (event.code) {
+                        case 'KeyW':
+                            moveForward = true;
+                            break;
+                        case 'KeyA':
+                            moveLeft = true;
+                            break;
+                        case 'KeyS':
+                            moveBackward = true;
+                            break;
+                        case 'KeyD':
+                            moveRight = true;
+                            break;
+                    }
+                });
+
+                document.addEventListener('keyup', (event) => {
+                    switch (event.code) {
+                        case 'KeyW':
+                            moveForward = false;
+                            break;
+                        case 'KeyA':
+                            moveLeft = false;
+                            break;
+                        case 'KeyS':
+                            moveBackward = false;
+                            break;
+                        case 'KeyD':
+                            moveRight = false;
+                            break;
+                    }
+                });
+            }
+
+            function toggleStreetViewMode() {
+                if (isStreetViewMode) {
+                    pointerLockControls.unlock();
+                } else {
+                    camera.position.set(orbitControls.target.x, 0.1 * modelScale, orbitControls.target.z);
+                    camera.lookAt(orbitControls.target);
+                    pointerLockControls.lock();
+                    streetViewInstructions.style.display = 'block';
+                }
+            }
+
+            function loadWaypointsAndPaths() {
+                fetch('data/waypoints.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        waypoints = data.waypoints;
+                        paths = data.paths;
+                        waypoints.forEach(wp => {
+                            const option = document.createElement('option');
+                            option.value = wp.name;
+                            buildingList.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error loading waypoints:', error));
+            }
+
+            function onWindowResize() {
+                if (camera && renderer && mapContainer) {
+                    camera.aspect = mapContainer.clientWidth / mapContainer.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(mapContainer.clientWidth, mapContainer.clientHeight);
+                    renderer.render(scene, camera);
+                }
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                const time = performance.now();
+                const delta = (time - prevTime) / 1000;
+
+                if (isStreetViewMode) {
+                    velocity.x -= velocity.x * 10.0 * delta;
+                    velocity.z -= velocity.z * 10.0 * delta;
+
+                    if (moveForward) velocity.z -= 400.0 * delta;
+                    if (moveBackward) velocity.z += 400.0 * delta;
+                    if (moveLeft) velocity.x -= 400.0 * delta;
+                    if (moveRight) velocity.x += 400.0 * delta;
+
+                    pointerLockControls.getObject().translateX(velocity.x * delta);
+                    pointerLockControls.getObject().translateZ(velocity.z * delta);
+
+                    if (camera.position.y < 0.1 * modelScale) {
+                        camera.position.y = 0.1 * modelScale;
+                    }
+                } else if (orbitControls) {
+                    orbitControls.update();
+                }
+
+                renderer.render(scene, camera);
+                prevTime = time;
+            }
+
+            function onCanvasClick(event) {
+                if (isStreetViewMode) {
+                    console.log("Click ignored: In street view mode.");
+                    return;
+                }
+
+                if (!campusModel) {
+                    console.warn("Click ignored: Campus model not yet loaded.");
+                    return;
+                }
+
+                if (event.button !== 0) {
+                    console.log("Click ignored: Not a left-click.");
+                    return;
+                }
+
+                const rect = canvas.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                console.log("Mouse coords:", { x: mouse.x, y: mouse.y });
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(campusModel.children, true);
+                console.log("Raycaster intersections:", intersects.length);
+
+                if (intersects.length > 0) {
+                    const clickedObject = intersects[0].object;
+                    console.log("Clicked object:", clickedObject.name || "Unnamed", "Type:", clickedObject.type);
+
+                    let buildingNameKey = null;
+                    let currentParent = clickedObject;
+                    let hierarchy = [];
+                    while (currentParent && currentParent !== scene) {
+                        hierarchy.push(currentParent.name || "Unnamed");
+                        if (currentParent.name && buildingData[currentParent.name]) {
+                            buildingNameKey = currentParent.name;
+                            break;
+                        }
+                        currentParent = currentParent.parent;
+                    }
+                    console.log("Object hierarchy:", hierarchy);
+
+                    if (buildingNameKey) {
+                        console.log("Found building:", buildingNameKey);
+                        const info = buildingData[buildingNameKey];
+                        displayBuildingInfo(info);
+                    } else {
+                        console.log("No matching building found in buildingData for clicked object.");
+                        hideBuildingInfo();
+                    }
+                } else {
+                    console.log("No objects intersected by raycaster.");
+                    hideBuildingInfo();
+                }
+            }
+
+            function displayBuildingInfo(info) {
+                console.log("Displaying building info for:", info.name);
+                buildingNameEl.textContent = info.name;
+                buildingDescriptionEl.textContent = info.description;
+                buildingDetailsEl.textContent = info.details;
+                buildingEventsListEl.innerHTML = '';
+                if (info.events && info.events.length > 0) {
+                    info.events.forEach(event => {
+                        const li = document.createElement('li');
+                        li.textContent = `${event.title} - ${event.time} (${event.location})`;
+                        buildingEventsListEl.appendChild(li);
+                    });
+                    noEventsMessageEl.style.display = 'none';
+                    buildingEventsListEl.style.display = 'block';
+                    console.log("Events added:", info.events.length);
+                } else {
+                    buildingEventsListEl.innerHTML = '';
+                    noEventsMessageEl.style.display = 'block';
+                    buildingEventsListEl.style.display = 'none';
+                    console.log("No events for this building.");
+                }
+                buildingInfoPanel.classList.add('visible');
+                mainContent.classList.add('panel-open');
+                orbitControls.enabled = false;
+                console.log("Panel classes:", buildingInfoPanel.className, "Main content classes:", mainContent.className);
+            }
+
+            function hideBuildingInfo() {
+                buildingInfoPanel.classList.remove('visible');
+                mainContent.classList.remove('panel-open');
+                orbitControls.enabled = true;
+                console.log("Hiding building info panel.");
+            }
+
+            function findAndDrawPath(startName, endName) {
+                console.log('Finding path from', startName, 'to', endName);
+                if (currentPathLine) {
+                    scene.remove(currentPathLine);
+                    currentPathLine.geometry.dispose();
+                    currentPathLine.material.dispose();
+                    currentPathLine = null;
+                }
+
+                const startWp = waypoints.find(wp => wp.name === startName);
+                const endWp = waypoints.find(wp => wp.name === endName);
+                if (!startWp || !endWp) {
+                    alert('Invalid building names. Please select valid buildings.');
+                    return;
+                }
+
+                const queue = [[startWp.id]];
+                const visited = new Set([startWp.id]);
+                const parentMap = new Map();
+                let foundPath = false;
+
+                while (queue.length > 0) {
+                    const currentPath = queue.shift();
+                    const currentId = currentPath[currentPath.length - 1];
+
+                    if (currentId === endWp.id) {
+                        foundPath = true;
+                        break;
+                    }
+
+                    const neighbors = paths
+                        .filter(p => p.from === currentId && !visited.has(p.to))
+                        .map(p => p.to);
+
+                    neighbors.forEach(neighborId => {
+                        visited.add(neighborId);
+                        queue.push([...currentPath, neighborId]);
+                        parentMap.set(neighborId, currentId);
+                    });
+                }
+
+                let pathIds = [];
+                if (foundPath) {
+                    let current = endWp.id;
+                    while (current !== undefined) {
+                        pathIds.unshift(current);
+                        current = parentMap.get(current);
+                    }
+                } else {
+                    pathIds = [startWp.id];
+                    let current = startWp.id;
+                    const tempVisited = new Set();
+                    tempVisited.add(current);
+                    while (current !== endWp.id) {
+                        const nextPath = paths.find(p => p.from === current && !tempVisited.has(p.to));
+                        if (!nextPath) {
+                            alert('No direct or simple path found between these buildings with current path data.');
+                            return;
+                        }
+                        current = nextPath.to;
+                        tempVisited.add(current);
+                        pathIds.push(current);
+                    }
+                }
+                console.log('Path found (IDs):', pathIds);
+                console.log('Path points:', pathIds.map(id => waypoints.find(w => w.id === id)));
+
+                const points = pathIds.map(id => {
+                    const wp = waypoints.find(w => w.id === id);
+                    const pos = new THREE.Vector3(wp.x, wp.y, wp.z)
+                        .multiplyScalar(modelScale)
+                        .add(modelOffset);
+                    console.log('Path point position:', wp.name, pos);
+                    return pos;
+                });
+
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 5 });
+                currentPathLine = new THREE.Line(geometry, material);
+                scene.add(currentPathLine);
+
+                const box = new THREE.Box3().setFromPoints(points);
+                const center = box.getCenter(new THREE.Vector3());
+                orbitControls.target.copy(center);
+                camera.position.set(center.x, center.y + 10, center.z + 20);
+                camera.lookAt(center);
+                orbitControls.update();
+                console.log('Camera position:', camera.position);
+            }
+
+            closeInfoPanelBtn.addEventListener('click', hideBuildingInfo);
+
+            if (canvas && mapContainer) {
+                init3DMap();
+            } else {
+                console.error("Canvas or map container not found for Three.js initialization.");
+            }
+
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    if (entry.target.id === 'map-container' && renderer) {
+                        onWindowResize();
+                    }
+                }
+            });
+            resizeObserver.observe(mapContainer);
+        });
+    </script>
+</body>
+</html>

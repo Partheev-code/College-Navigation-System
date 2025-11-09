@@ -1,0 +1,22 @@
+Received: Array
+(
+    [role] => Student
+    [username] => test1
+    [password] => test1
+)
+
+Received: Array
+(
+    [role] => Student
+    [username] => test2
+    [password] => 123
+)
+
+Login successful for: test2
+Received: Array
+(
+    [role] => Student
+    [username] => test3
+    [password] => 987
+)
+

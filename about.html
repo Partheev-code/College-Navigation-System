@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us</title>
+    <link href="css/output.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="about.css">
+</head>
+<body class="bg-main font-sans">
+    <header class="bg-header text-white py-6">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <h1 class="text-4xl font-bold text-accent">About Us</h1>
+            <a href="#" id="backButton" class="back-btn">Back to Dashboard</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-12 px-4">
+        <section class="bg-section rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-semibold text-accent mb-4">Our Story</h2>
+            <p class="text-gray-800 leading-relaxed">
+                Founded in 2020, our company started with a simple mission: to make a positive impact through innovation and dedication. We are a team of passionate individuals committed to delivering high-quality solutions that empower our clients and community.
+            </p>
+        </section>
+
+        <section class="bg-section rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-semibold text-accent mb-4">Our Mission</h2>
+            <p class="text-gray-800 leading-relaxed">
+                Our mission is to create meaningful experiences by leveraging technology, creativity, and collaboration. We strive to push boundaries, embrace challenges, and deliver exceptional results that drive progress.
+            </p>
+        </section>
+
+        <section class="bg-section rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-semibold text-accent mb-4">Our Team</h2>
+            <p class="text-gray-800 leading-relaxed">
+                We are a diverse group of professionals with expertise in various fields, united by a shared vision of excellence. From developers to designers, our team works together to bring ideas to life.
+            </p>
+        </section>
+    </main>
+
+    <footer class="bg-footer text-white py-6">
+        <div class="container mx-auto text-center">
+            <p>© 2025 Your Company. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Function to get cookie by name
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        // Function to get user role
+        function getUserRole() {
+            // Check URL parameter first
+            const urlParams = new URLSearchParams(window.location.search);
+            let role = urlParams.get('role');
+            console.log('Retrieved role from URL:', role);
+
+            // If role found in URL, store it in localStorage
+            if (role) {
+                role = role.toLowerCase();
+                if (['admin', 'student', 'faculty'].includes(role)) {
+                    localStorage.setItem('userRole', role);
+                    console.log('Stored role in localStorage:', role);
+                    return role;
+                }
+            }
+
+            // Check localStorage, sessionStorage, and cookies
+            role = localStorage.getItem('userRole') || 
+                  sessionStorage.getItem('userRole') || 
+                  getCookie('userRole');
+            console.log('Retrieved user role from storage:', role);
+
+            // Normalize and validate role
+            if (role) {
+                role = role.toLowerCase();
+                if (['admin', 'student', 'faculty'].includes(role)) {
+                    return role;
+                }
+            }
+
+            // Fallback: Redirect to login page
+            console.warn('No valid user role found, redirecting to login');
+            window.location.href = 'login.html';
+            return null;
+        }
+
+        // Function to redirect to the appropriate dashboard
+        function redirectToDashboard() {
+            const role = getUserRole();
+            if (!role) return; // Exit if redirected to login
+
+            let dashboardUrl;
+            switch (role) {
+                case 'admin':
+                    dashboardUrl = 'admin_dashboard.html';
+                    break;
+                case 'student':
+                    dashboardUrl = 'student_dashboard.html';
+                    break;
+                case 'faculty':
+                    dashboardUrl = 'faculty_dashboard.html';
+                    break;
+                default:
+                    dashboardUrl = 'dashboard.html';
+                    console.warn('Unexpected role, redirecting to fallback dashboard');
+            }
+
+            console.log('Redirecting to:', dashboardUrl);
+            window.location.href = dashboardUrl;
+        }
+
+        // Add click event listener to the back button
+        document.getElementById('backButton').addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default anchor behavior
+            redirectToDashboard();
+        });
+
+        // Log role on page load for debugging
+        window.addEventListener('load', () => {
+            console.log('Page loaded, current user role:', getUserRole());
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - College Navigation System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="attendance.css">
+   
+</head>
+<body>
+    <div class="main-content">
+        <div class="header">
+            <h1 class="page-title">My Attendance</h1>
+            <div class="header-actions">
+                <a href="student_dashboard.html" class="action-btn">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <div id="loading-spinner" class="spinner" style="display: none;">
+            <i class="fas fa-spinner fa-spin"></i> Loading...
+        </div>
+
+        <div class="attendance-summary">
+            <div class="summary-card card-present">
+                <div class="summary-icon green"><i class="fas fa-check-circle"></i></div>
+                <div class="summary-info">
+                    <div class="summary-value" id="present-days">0</div>
+                    <div class="summary-label">Days Present</div>
+                </div>
+            </div>
+            <div class="summary-card card-absent">
+                <div class="summary-icon red"><i class="fas fa-times-circle"></i></div>
+                <div class="summary-info">
+                    <div class="summary-value" id="absent-days">0</div>
+                    <div class="summary-label">Days Absent</div>
+                </div>
+            </div>
+            <div class="summary-card card-total">
+                <div class="summary-icon orange"><i class="fas fa-calendar"></i></div>
+                <div class="summary-info">
+                    <div class="summary-value" id="total-days">0</div>
+                    <div class="summary-label">Total Days</div>
+                </div>
+            </div>
+            <div class="summary-card card-days75">
+                <div class="summary-icon blue"><i class="fas fa-clock"></i></div>
+                <div class="summary-info">
+                    <div class="summary-value" id="days-to-attend">0</div>
+                    <div class="summary-label">Days Needed for 75%</div>
+                </div>
+            </div>
+            <div class="summary-card calculator-card card-calculator">
+                <div class="summary-icon purple"><i class="fas fa-calculator"></i></div>
+                <div class="summary-info">
+                    <div class="summary-label">Attendance Calculator</div>
+                    <div class="calculator-form">
+                        <div class="form-group">
+                            <label for="calc-present-days">Present Days</label>
+                            <input type="number" id="calc-present-days" class="control-input" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="calc-total-days">Total Days</label>
+                            <input type="number" id="calc-total-days" class="control-input" min="1" required>
+                        </div>
+                        <button class="action-btn" id="calculate-percentage-btn">Calculate</button>
+                        <p id="calculator-result" class="message success" style="display: none;"></p>
+                        <p id="calculator-error" class="message error" style="display: none;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="absent-dates">
+            <h4>Absent Dates</h4>
+            <div class="table-wrapper">
+                <table id="absent-dates-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <p id="no-absent-message" class="message" style="display: none;">
+                No absent dates recorded.
+            </p>
+        </div>
+        <p id="error-message" class="message error" style="display: none;"></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Session check
+            fetch('check_session.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.logged_in || data.user.role !== 'Student') {
+                        window.location.href = 'index.html';
+                    } else {
+                        loadAttendanceData();
+                    }
+                })
+                .catch(error => {
+                    console.error('Session check error:', error);
+                    window.location.href = 'index.html';
+                });
+
+            // Attendance Data Loading
+            const presentDaysEl = document.getElementById('present-days');
+            const absentDaysEl = document.getElementById('absent-days');
+            const totalDaysEl = document.getElementById('total-days');
+            const daysToAttendEl = document.getElementById('days-to-attend');
+            const absentDatesTableBody = document.querySelector('#absent-dates-table tbody');
+            const noAbsentMessage = document.getElementById('no-absent-message');
+            const errorMessage = document.getElementById('error-message');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            async function loadAttendanceData() {
+                noAbsentMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                absentDatesTableBody.innerHTML = '';
+                loadingSpinner.style.display = 'flex';
+
+                try {
+                    const response = await fetch('get_student_attendance.php');
+                    const data = await response.json();
+                    loadingSpinner.style.display = 'none';
+
+                    if (data.success) {
+                        presentDaysEl.textContent = data.present_days;
+                        absentDaysEl.textContent = data.absent_days;
+                        totalDaysEl.textContent = data.total_days || (parseInt(data.present_days) + parseInt(data.absent_days));
+                        daysToAttendEl.textContent = data.days_to_attend_for_75;
+
+                        document.getElementById('calc-present-days').value = data.present_days;
+                        document.getElementById('calc-total-days').value = data.total_days || (parseInt(data.present_days) + parseInt(data.absent_days));
+
+                        if (data.absent_dates.length === 0) {
+                            noAbsentMessage.style.display = 'block';
+                        } else {
+                            data.absent_dates.forEach(date => {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `<td>${date}</td>`;
+                                absentDatesTableBody.appendChild(tr);
+                            });
+                        }
+                    } else {
+                        errorMessage.textContent = data.message || 'Failed to load attendance data.';
+                        errorMessage.style.display = 'block';
+                    }
+                } catch (error) {
+                    loadingSpinner.style.display = 'none';
+                    console.error('Error loading attendance:', error);
+                    errorMessage.textContent = 'Error loading attendance data. Please try again.';
+                    errorMessage.style.display = 'block';
+                }
+            }
+
+            // Attendance Calculator Logic
+            const calcPresentDays = document.getElementById('calc-present-days');
+            const calcTotalDays = document.getElementById('calc-total-days');
+            const calculatePercentageBtn = document.getElementById('calculate-percentage-btn');
+            const calculatorResult = document.getElementById('calculator-result');
+            const calculatorError = document.getElementById('calculator-error');
+
+            calculatePercentageBtn.addEventListener('click', () => {
+                calculatorResult.style.display = 'none';
+                calculatorError.style.display = 'none';
+
+                const presentDays = parseInt(calcPresentDays.value);
+                const totalDays = parseInt(calcTotalDays.value);
+
+                if (isNaN(presentDays) || isNaN(totalDays) || presentDays < 0 || totalDays < 1) {
+                    calculatorError.textContent = 'Please enter valid numbers (Present Days ≥ 0, Total Days ≥ 1).';
+                    calculatorError.style.display = 'block';
+                    return;
+                }
+
+                if (presentDays > totalDays) {
+                    calculatorError.textContent = 'Present Days cannot exceed Total Days.';
+                    calculatorError.style.display = 'block';
+                    return;
+                }
+
+                const percentage = ((presentDays / totalDays) * 100).toFixed(1);
+                calculatorResult.textContent = `Attendance Percentage: ${percentage}%`;
+                calculatorResult.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>

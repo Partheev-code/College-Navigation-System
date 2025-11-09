@@ -1,0 +1,133 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #E9F5BE; /* Light green */
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.main-content {
+    width: 100%;
+    max-width: 1200px;
+    padding: 20px;
+}
+
+.content-section {
+    background: rgba(129, 231, 175, 0.1); /* Mint green with opacity */
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.content-section.centered {
+    text-align: center;
+}
+
+h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #03A791; /* Teal */
+    margin-bottom: 20px;
+}
+
+.back-btn {
+    display: inline-block;
+    background: #03A791; /* Teal */
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.back-btn:hover {
+    background: #F1BA88; /* Light peach */
+    transform: translateY(-2px);
+}
+
+.appointments-section,
+.messages-section {
+    margin: 20px 0;
+}
+
+h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #03A791; /* Teal */
+    margin-bottom: 15px;
+}
+
+.appointments-table-wrapper,
+.messages-table-wrapper {
+    overflow-x: auto;
+}
+
+.appointments-table,
+.messages-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(129, 231, 175, 0.1); /* Mint green with opacity */
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.appointments-table th,
+.appointments-table td,
+.messages-table th,
+.messages-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(129, 231, 175, 0.3); /* Mint green with opacity */
+}
+
+.appointments-table th,
+.messages-table th {
+    background: #F1BA88; /* Light peach */
+    color: #fff;
+    font-weight: 600;
+}
+
+.appointments-table tbody tr:hover,
+.messages-table tbody tr:hover {
+    background: rgba(241, 186, 136, 0.2); /* Light peach with opacity */
+}
+
+.no-notifications,
+.no-messages {
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    padding: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main VHS-content {
+        padding: 10px;
+    }
+
+    .content-section {
+        padding: 15px;
+    }
+
+    .appointments-table th,
+    .appointments-table td,
+    .messages-table th,
+    .messages-table td {
+        padding: 8px;
+        font-size: 12px;
+    }
+}

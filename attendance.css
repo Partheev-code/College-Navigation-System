@@ -1,0 +1,382 @@
+/* ==========================================================================
+   Global Reset and Base Styles
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #E9F5BE; /* Light green */
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+}
+
+/* ==========================================================================
+   Main Content Styles
+   ========================================================================== */
+.main-content {
+    flex: 1;
+    padding: clamp(15px, 2vw, 25px);
+    transition: all 0.3s ease;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    position: relative;
+}
+
+/* ==========================================================================
+   Header Styles
+   ========================================================================== */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(241, 186, 136, 0.1); /* Light peach with opacity */
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.page-title {
+    font-size: 24px;
+    color: #03A791; /* Teal */
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+}
+
+.action-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #03A791; /* Teal */
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+
+.action-btn:hover {
+    background: #F1BA88; /* Light peach */
+}
+
+/* ==========================================================================
+   Attendance Summary Styles
+   ========================================================================== */
+.attendance-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.summary-card {
+    display: flex;
+    align-items: flex-start;
+    background: rgba(129, 231, 175, 0.1); /* Mint green with opacity */
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    min-height: 140px;
+    flex-direction: row;
+}
+
+.summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    background: rgba(241, 186, 136, 0.2); /* Light peach with opacity */
+}
+
+.summary-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 20px;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.summary-icon.green { background: #03A791; } /* Teal */
+.summary-icon.red { background: #F1BA88; } /* Light peach */
+.summary-icon.orange { background: #81E7AF; } /* Mint green */
+.summary-icon.blue { background: #03A791; } /* Teal */
+.summary-icon.purple { background: #81E7AF; } /* Mint green */
+
+.summary-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.summary-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: #03A791; /* Teal */
+    margin-bottom: 5px;
+}
+
+.summary-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+}
+
+.calculator-card .summary-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.calculator-form {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    font-size: 13px;
+    color: #03A791; /* Teal */
+}
+
+.control-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #81E7AF; /* Mint green */
+    border-radius: 6px;
+    font-size: 13px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+.control-input:focus {
+    border-color: #03A791; /* Teal */
+    outline: none;
+}
+
+/* ==========================================================================
+   Message Styles
+   ========================================================================== */
+.message {
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.message.error {
+    background: rgba(241, 186, 136, 0.2); /* Light peach with opacity */
+    color: #F1BA88; /* Light peach */
+}
+
+.message.success {
+    background: rgba(129, 231, 175, 0.2); /* Mint green with opacity */
+    color: #03A791; /* Teal */
+}
+
+/* ==========================================================================
+   Absent Dates Styles
+   ========================================================================== */
+.absent-dates {
+    margin-top: 20px;
+    background: rgba(129, 231, 175, 0.1); /* Mint green with opacity */
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.absent-dates h4 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #03A791; /* Teal */
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #81E7AF; /* Mint green */
+}
+
+#absent-dates-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #E9F5BE; /* Light green */
+    font-size: 14px;
+}
+
+#absent-dates-table th,
+#absent-dates-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #81E7AF; /* Mint green */
+}
+
+#absent-dates-table th {
+    background: #F1BA88; /* Light peach */
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+#absent-dates-table tbody tr:hover {
+    background: rgba(129, 231, 175, 0.2); /* Mint green with opacity */
+}
+
+/* ==========================================================================
+   Spinner Styles
+   ========================================================================== */
+.spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-size: 16px;
+    color: #03A791; /* Teal */
+}
+
+.spinner i {
+    margin-right: 10px;
+}
+
+/* ==========================================================================
+   Fallback for Unsupported Backdrop Filter
+   ========================================================================== */
+@supports not (backdrop-filter: blur(10px)) {
+    .main-content, .summary-card, .absent-dates {
+        background: rgba(129, 231, 175, 0.3); /* Mint green with opacity */
+    }
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+@media (max-width: 992px) {
+    .attendance-summary {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: clamp(10px, 2vw, 15px);
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-actions {
+        width: 100%;
+        margin-top: 15px;
+        justify-content: flex-end;
+    }
+
+    .attendance-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-card {
+       height: 120px;
+    }
+
+    .absent-dates {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 10px;
+    }
+
+    .page-title {
+        font-size: 20px;
+    }
+
+    .action-btn {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+
+    .summary-card {
+        padding: 15px;
+        min-height: 100px;
+    }
+
+    .summary-value {
+        font-size: 20px;
+    }
+
+    .summary-label,
+    .form-group label,
+    .control-input,
+    #absent-dates-table th,
+    #absent-dates-table td {
+        font-size: 12px;
+    }
+
+    .form-group label {
+        font-size: 12px;
+    }
+
+    .control-input {
+        padding: 6px;
+    }
+
+    .absent-dates h4 {
+        font-size: 16px;
+    }
+
+    .message {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 320px) {
+    .main-content {
+        padding: 5px;
+    }
+
+    .summary-card {
+        padding: 10px;
+    }
+
+    .control-input {
+        font-size: 11px;
+        padding: 4px;
+    }
+
+    .action-btn {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}

@@ -1,0 +1,284 @@
+/* ==========================================================================
+   Global Reset and Base Styles
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #E9F5BE 0%, #81E7AF 100%);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+}
+
+/* ==========================================================================
+   Main Content Styles
+   ========================================================================== */
+.main-content {
+    flex: 1;
+    padding: clamp(15px, 2vw, 25px);
+    transition: all 0.3s ease;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* ==========================================================================
+   Content Section Styles
+   ========================================================================== */
+.content-section {
+    width: 100%;
+    max-width: clamp(300px, 90vw, 500px);
+    margin: clamp(10px, 2vw, 20px) auto;
+    padding: clamp(20px, 3vw, 30px);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.content-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.content-section.centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.content-section h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: #333;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================================================
+   Back Button Styles
+   ========================================================================== */
+.back-btn {
+    display: inline-block;
+    padding: clamp(8px, 2vw, 10px) clamp(15px, 3vw, 20px);
+    background: #E9F5BE;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    margin: 15px 0;
+}
+
+.back-btn:hover {
+    background: #81E7AF;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================================================
+   Appointment Form Styles
+   ========================================================================== */
+.appointment-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(15px, 2vw, 20px);
+    padding: clamp(15px, 2vw, 20px);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(5px, 1vw, 8px);
+}
+
+.form-group label {
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    color: #333;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    padding: clamp(8px, 1.5vw, 10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+    background: rgba(255, 255, 255, 0.2);
+    color: #333;
+    transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #81E7AF;
+    background: rgba(255, 255, 255, 0.3);
+    outline: none;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: clamp(80px, 15vh, 100px);
+}
+
+.book-btn {
+    background: #E9F5BE;
+    color: #333;
+    border: none;
+    padding: clamp(10px, 2vw, 12px) clamp(20px, 3vw, 25px);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    align-self: flex-end;
+}
+
+.book-btn:hover {
+    background: #81E7AF;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================================================
+   Success and Error Message Styles
+   ========================================================================== */
+.faculty-success {
+    background: rgba(129, 231, 175, 0.1); /* Derived from #81E7AF */
+    color: #81E7AF;
+    padding: clamp(10px, 1.5vw, 12px);
+    border-radius: 6px;
+    font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+    text-align: center;
+    margin-bottom: clamp(10px, 1.5vw, 15px);
+    border: 1px solid rgba(129, 231, 175, 0.3);
+}
+
+.faculty-error {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    padding: clamp(10px, 1.5vw, 12px);
+    border-radius: 6px;
+    font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+    text-align: center;
+    margin-bottom: clamp(10px, 1.5vw, 15px);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* ==========================================================================
+   Fallback for Unsupported Backdrop Filter
+   ========================================================================== */
+@supports not (backdrop-filter: blur(12px)) {
+    .content-section, .appointment-form {
+        background: rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+@media (max-width: 992px) {
+    .content-section {
+        max-width: clamp(280px, 85vw, 450px);
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: clamp(10px, 2vw, 15px);
+    }
+
+    .content-section {
+        padding: clamp(15px, 2.5vw, 20px);
+    }
+
+    .content-section h2 {
+        font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+    }
+
+    .back-btn {
+        font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+        padding: clamp(6px, 1.5vw, 8px) clamp(12px, 2.5vw, 15px);
+    }
+
+    .appointment-form {
+        padding: clamp(10px, 2vw, 15px);
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 10px;
+    }
+
+    .content-section {
+        max-width: 95%;
+        padding: 15px;
+    }
+
+    .content-section h2 {
+        font-size: clamp(1.2rem, 2.5vw, 1.4rem);
+    }
+
+    .back-btn {
+        font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+        padding: clamp(5px, 1.5vw, 6px) clamp(10px, 2vw, 12px);
+    }
+
+    .appointment-form {
+        padding: 10px;
+    }
+
+    .form-group label {
+        font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+    }
+
+    .form-group input,
+    .form-group textarea {
+        font-size: clamp(0.75rem, 1.8vw, 0.85rem);
+        padding: clamp(6px, 1.5vw, 8px);
+    }
+
+    .book-btn {
+        font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+        padding: clamp(8px, 1.5vw, 10px) clamp(15px, 2.5vw, 20px);
+    }
+
+    .faculty-success,
+    .faculty-error {
+        font-size: clamp(0.75rem, 1.8vw, 0.85rem);
+    }
+}
+
+@media (max-width: 320px) {
+    .content-section {
+        padding: 10px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        padding: 5px;
+        font-size: 0.7rem;
+    }
+
+    .book-btn {
+        padding: 6px 12px;
+        font-size: 0.7rem;
+    }
+}
