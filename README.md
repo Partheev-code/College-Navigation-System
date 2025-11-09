@@ -56,9 +56,9 @@ An interactive and user-friendly web application designed to help students, facu
 ---
 
 ## 🧑‍💻 Developed By
-**Your Name**  
+**Partheev p a**  
 BCA Final Year Student  
-College Name (optional)
+College Name (CMS college, kottayam)
 
 ---
 
